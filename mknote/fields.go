@@ -99,6 +99,7 @@ const (
 	VRDOffset                  exif.FieldName = "VRDOffset"
 	SensorInfo                 exif.FieldName = "SensorInfo"
 	ColorData                  exif.FieldName = "ColorData"
+	FocalLength 			   exif.FieldName = "FocalLength"
 
 	// Nikon-specific fields
 	Nikon_Version        exif.FieldName = "Nikon.Version"
@@ -140,7 +141,7 @@ const (
 var makerNoteCanonFields = map[uint16]exif.FieldName{
 	0x0000: Canon_0x0000,
 	0x0001: Canon_CameraSettings,
-	0x0002: exif.FocalLength,
+	0x0002: FocalLength,
 	0x0003: Canon_0x0003,
 	0x0004: Canon_ShotInfo,
 	0x0005: Panorama,

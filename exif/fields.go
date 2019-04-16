@@ -89,6 +89,10 @@ const (
 	SubjectDistanceRange       FieldName = "SubjectDistanceRange"
 	LensMake                   FieldName = "LensMake"
 	LensModel                  FieldName = "LensModel"
+
+	SerialNumber			   FieldName = "SerialNumber"
+	LensSerialNumber 		   FieldName = "LensSerialNumber"
+
 )
 
 // Windows-specific tags
@@ -175,6 +179,8 @@ var exifFields = map[uint16]FieldName{
 	0x013B: Artist,
 	0x8298: Copyright,
 
+	0xa431: SerialNumber,
+
 	// Windows-specific tags
 	0x9c9b: XPTitle,
 	0x9c9c: XPComment,
@@ -257,6 +263,7 @@ var exifFields = map[uint16]FieldName{
 	0xA40C: SubjectDistanceRange,
 	0xA433: LensMake,
 	0xA434: LensModel,
+	0xA435: LensSerialNumber,
 }
 
 var gpsFields = map[uint16]FieldName{
