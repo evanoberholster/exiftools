@@ -1,10 +1,101 @@
 package main
 
 import (
+	"time"
+	"fmt"
+	"trimmer.io/go-xmp/xmp"
+	_ "trimmer.io/go-xmp/models"
+	"trimmer.io/go-xmp/models/dc"
+	"trimmer.io/go-xmp/models/xmp_base"
+
 	"github.com/evanoberholster/exif/exif"
 	"github.com/evanoberholster/exif/tiff"
 	"github.com/evanoberholster/exif/mknote"
 )
+
+var Exif_ExposureProgramValues = map[int]string{
+	0:"Not Defined", 
+	1:"Manual", 
+	2:"Program AE", 
+	3:"Aperture-priority AE", 
+	4:"Shutter speed priority AE", 
+	5:"Creative (Slow speed)", 
+	6:"Action (High speed)", 
+	7:"Portrait", 
+	8:"Landscape", 
+	9:"Bulb",
+}
+
+var Exif_MeteringModeValues = map[int]string{
+	0:"Unknown", 
+	1:"Average", 
+	2:"Center-weighted average", 
+	3:"Spot", 
+	4:"Multi-spot", 
+	5:"Multi-segment", 
+	6:"Partial", 
+	255:"Other",
+}
+
+var Exif_FlashBoolValues = map[int]bool{
+	0:false,
+	1:true,
+	5:true,
+	7:true,
+	8:false,
+	9:true,
+	13:true,
+	15:true,
+	16:false,
+	20:false,
+	24:false,
+	25:true,
+	29:true,
+	31:true,
+	32:false,
+	48:false,
+	65:true,
+	69:true,
+	71:true,
+	73:true,
+	77:true,
+	79:true,
+	80:false,
+	88:false,
+	89:true,
+	93:true,
+	95:true,
+}
+
+var Exif_FlashValues = map[int]string{
+	0:"No Flash",
+	1:"Fired",
+	5:"Fired, Return not detected",
+	7:"Fired, Return detected",
+	8:"On, Did not fire",
+	9:"On, Fired",
+	13:"On, Return not detected",
+	15:"On, Return detected",
+	16:"Off, Did not fire",
+	20:"Off, Did not fire, Return not detected",
+	24:"Auto, Did not fire",
+	25:"Auto, Fired",
+	29:"Auto, Fired, Return not detected",
+	31:"Auto, Fired, Return detected",
+	32:"No flash function",
+	48:"Off, No flash function",
+	65:"Fired, Red-eye reduction",
+	69:"Fired, Red-eye reduction, Return not detected",
+	71:"Fired, Red-eye reduction, Return detected",
+	73:"On, Red-eye reduction",
+	77:"On, Red-eye reduction, Return not detected",
+	79:"On, Red-eye reduction, Return detected",
+	80:"Off, Red-eye reduction",
+	88:"Auto, Did not fire, Red-eye reduction",
+	89:"Auto, Fired, Red-eye reduction",
+	93:"Auto, Fired, Red-eye reduction, Return not detected",
+	95:"Auto, Fired, Red-eye reduction, Return detected",
+}
 
 type CameraSettingsField map[int]string
 
@@ -102,7 +193,6 @@ type CameraSettings struct {
 	ExposureMode 		string 		`json:"ExposureMode"`
 	ContinuousDrive		string 		`json:"ContinuousDrive"`
 	MeteringMode		string 		`json:"MeteringMode"`
-	//AESetting			string 		`json:"AESetting"`
 }
 
 func ProcessCameraSettingsFields(tag *tiff.Tag, i int) (string) {
@@ -125,7 +215,6 @@ func Canon_CameraSettings(x *exif.Exif) (CameraSettings, error) {
 	c.FocusMode = ProcessCameraSettingsFields(tag, Canon_FocusMode)
 	c.ExposureMode = ProcessCameraSettingsFields(tag, Canon_ExposureMode)
 	c.MeteringMode = ProcessCameraSettingsFields(tag, Canon_MeteringMode)
-	//c.AESetting = ProcessCameraSettingsFields(tag, Canon_AESetting)
 
 	return c, nil
 }
@@ -167,13 +256,62 @@ func ExposureBias(x *exif.Exif) (Rational, error) {
 	return r.Set(num,denom), err
 }
 
+func ExposureProgram(x *exif.Exif) (string, error) {
+	tag, err := x.Get(exif.ExposureProgram)
+	if err != nil {
+		return "", err
+	}
+	v, err := tag.Int(0)
+	if err != nil {
+		return "", err
+	}
+	return Exif_ExposureProgramValues[v], nil
+}
+
+func MeteringMode(x *exif.Exif) (string, error) {
+	tag, err := x.Get(exif.MeteringMode)
+	if err != nil {
+		return "", err
+	}
+	v, err := tag.Int(0)
+	if err != nil {
+		return "", err
+	}
+	return Exif_MeteringModeValues[v], nil
+}
+
+func Flash(x *exif.Exif) (ExifFlash, error) {
+	tag, err := x.Get(exif.Flash)
+	if err != nil {
+		return ExifFlash{}, err
+	}
+	v, err := tag.Int(0)
+	if err != nil {
+		return ExifFlash{}, err
+	}
+
+	return ExifFlash{
+			Fired:Exif_FlashBoolValues[v],
+			Description:Exif_FlashValues[v],
+			Value:int(v),
+		}, nil
+}
+
+type ExifFlash struct {
+	Fired 			bool
+	Description 	string
+	Value			int
+}
+
 type Rational struct {
-	num, denom		int64 // Numerator and Denominator
+	Num, Denom		int64 // Numerator and Denominator
+	Value 			string		
 }
 
 func (r Rational) Set(n, d int64) Rational{
-	r.num = n
-	r.denom = d
+	r.Num = n
+	r.Denom = d
+	r.Value = fmt.Sprintf("%d/%d",n,d)
 	return r
 }
 
@@ -185,7 +323,80 @@ func FetchString(x *exif.Exif, tagLabel exif.FieldName) (string, error) {
 	return a.StringVal()
 }
 
-/////
+// Metadata
+type Metadata struct {
+	FileSize		int64 		`json:"FileSize"` 		  
+	MIMEType		string 		`json:"MIMEType"`
+	DublinCore		DublinCore 	`json:"DublinCore"`
+	XmpBase 		XmpBase 	`json:"XmpBase"`
+	Exif 			Exif 		`json:"Exif"`
+}
+
+// XMP
+///// Modified DublinCore 17/04/2019 https://godoc.org/trimmer.io/go-xmp/models/dc#DublinCore
+
+type DublinCore struct {
+    Creator     string  	`xmp:"dc:creator"`
+    Description string   	`xmp:"dc:description"`
+    Format      string      `xmp:"dc:format"`
+    Rights      string   	`xmp:"dc:rights"`
+    Source      string      `xmp:"dc:source"`
+    Subject     []string 	`xmp:"dc:subject"`
+    Title       string   	`xmp:"dc:title"`
+}
+
+func xmpDublinCore(m *xmp.Document) DublinCore {
+	var d DublinCore
+	c := dc.FindModel(m)
+	if c == nil {
+		return d
+	}
+
+	creator := []string(c.Creator)
+	if len(creator) > 0 {
+		d.Creator = creator[0]
+	}
+	s := []string(c.Subject)
+	if s == nil {
+	 	s = []string{}
+	} 
+	d.Subject = s
+	d.Description = c.Description.Default()
+	d.Format = string(c.Format)
+	d.Rights = c.Rights.Default()
+	d.Title = c.Title.Default()
+	
+	return d
+}
+
+///// Modified XmpBase 17/04/2019 https://godoc.org/trimmer.io/go-xmp/models/xmp_base#XmpBase
+
+type XmpBase struct {
+	CreateDate   time.Time               `xmp:"xmp:CreateDate"`
+	CreatorTool  string          		 `xmp:"xmp:CreatorTool"`
+	Identifier   string 		         `xmp:"xmp:Identifier"`
+	Label        string                  `xmp:"xmp:Label"`
+	MetadataDate time.Time               `xmp:"xmp:MetadataDate"`
+	ModifyDate   time.Time               `xmp:"xmp:ModifyDate"`
+	Rating       int 	                 `xmp:"xmp:Rating"`
+}
+
+func xmpBase(m *xmp.Document) XmpBase {
+	var b XmpBase
+	c := xmpbase.FindModel(m)
+	if c == nil {
+		return XmpBase{}
+	}
+
+	b.CreateDate = c.CreateDate.Value()
+	b.MetadataDate = c.MetadataDate.Value()
+	b.ModifyDate = c.ModifyDate.Value()
+	b.Label = string(c.Label)
+	b.Rating = int(c.Rating)
+	b.CreatorTool = c.CreatorTool.String()
+
+	return b
+}	
 
 
 
