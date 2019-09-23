@@ -6,14 +6,6 @@ import (
 	"github.com/evanoberholster/exif/tiff"
 )
 
-func (x *Exif) Software() (string, error) {
-	tag, err := x.Get(Software)
-	if err != nil {
-		return "", err
-	}
-	return tag.StringVal()
-}
-
 func (x *Exif) GPSAltitude() (float32, error) {
 	alt, err := x.Get(GPSAltitude)
 	if err != nil { return 0, err }

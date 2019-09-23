@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/4.CR2"
+	fname := "../../test/img/4.CR2"//.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -30,36 +30,6 @@ func main() {
 
 	elapsed := time.Since(start)
 	log.Println(elapsed)
-}
-
-type Exif struct {
-	ImageWidth              	int     	`json:"ImageWidth"`
-	ImageHeight             	int     	`json:"ImageHeight"`
-	CameraMake                  string  	`json:"CameraMake"`		  // OK
-	CameraModel                 string  	`json:"CameraModel"`	  // OK
-	CameraSerial				string 		`json:"CameraSerial"`	  // OK
-	LensModel					string 		`json:"LensModel"`		  // OK
-	LensSerial					string 		`json:"LensSerial"` 	  // OK
-	Artist                    	string  	`json:"Artist"` 		  // OK
-	Copyright                 	string  	`json:"Copyright"` 		  // OK
-	Aperture 					float32  	`json:"Aperture"` 		  // OK
-	ShutterSpeed 				Rational	`json:"ShutterSpeed"` 	  // OK
-	ISOSpeed                   	int     	`json:"ISO"`  			  // OK
-	ExposureBias 				Rational	`json:"ExposureBias"` 	  // OK
-	ExposureProgram           	string 	  	`json:"ExposureProgram"`  // OK
-	MeteringMode				string 		`json:"MeteringMode"`	  // OK
-	Orientation             	int 	  	`json:"Orientation"`
-	Flash						ExifFlash	`json:"Flash"` 			  // OK
-	FocalLength 				float32		`json:"FocalLength"` 	  // OK
-	FocalLengthEqv 				float32		`json:"FocalLengthEqv"`   // mm
-	GPSLatitude 				float64 	`json:"GPSLatitude"`	  // OK
-	GPSLongitude 				float64 	`json:"GPSLongitude"`	  // OK
-	GPSAltitude 				float32		`json:"GPSAltitude"`	  // OK
-	GPSTimeStamp 				time.Time   `json:"GPSTimeStamp"`	  // OK
-	DateTimeOriginal			time.Time 	`json:"DateTimeOriginal"` // OK
-	ModifyTimeStamp 			time.Time 	`json:"ModifyTimeStamp"`
-	Software					string 		`json:"Software"`		  // OK
-	CameraSettings 				CameraSettings 	`json:"CameraSettings"`
 }
 
 func NewMetadata(file *os.File) *Metadata {
@@ -122,14 +92,13 @@ func (m *Metadata) exifMetadata(f *os.File) (error) {
 	m.Exif.GPSLatitude, m.Exif.GPSLongitude, _ = x.LatLong()
 
 	m.Exif.DateTimeOriginal, _ = x.DateTime()
-	m.Exif.FocalLength, err = x.FocalLength()
+	m.Exif.FocalLength, _ = x.FocalLength()
 
 	m.Exif.FocalLengthEqv, _ = FocalLengthIn35mmFilm(x)
-	m.Exif.ExposureProgram, _ = ExposureProgram(x)
+	m.Exif.ExposureMode, _ = ExposureMode(x)
 	m.Exif.MeteringMode, _ = MeteringMode(x)
 
 	m.Exif.Flash, _ = Flash(x)
-	log.Println(m.Exif.Flash)
 
 	// Image Size
 	m.Exif.ImageWidth, m.Exif.ImageHeight = GetImageSize(x)
@@ -139,7 +108,9 @@ func (m *Metadata) exifMetadata(f *os.File) (error) {
 	m.Exif.CameraSerial, _ = FetchString(x, exif.SerialNumber)
 	m.Exif.Artist, _ = FetchString(x, exif.Artist)
 	m.Exif.Copyright, _ = FetchString(x, exif.Copyright)
-
+	m.Exif.Software, _ = FetchString(x, exif.Software)
+	m.Exif.ImageDescription, _ = FetchString(x, exif.ImageDescription)
+	m.Exif.Orientation, _ = Orientation(x)
 	
 	m.Exif.LensModel, _ = FetchString(x, exif.LensModel)
 	m.Exif.LensSerial, _ = FetchString(x, exif.LensSerialNumber)
@@ -149,11 +120,7 @@ func (m *Metadata) exifMetadata(f *os.File) (error) {
 	m.Exif.ShutterSpeed, _ = ShutterSpeed(x)
 	m.Exif.ExposureBias, _ = ExposureBias(x)
 	
-	m.Exif.Software, _ = x.Software()
-	c, err := Canon_CameraSettings(x)
-	if err == nil {
-		m.Exif.CameraSettings = c
-	}
+	m.Exif.CameraSettings, err = Canon_CameraSettings(x)
 
 	// Two convenience functions exist for date/time taken and GPS coords:
 	tm, _ := x.DateTime()

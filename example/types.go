@@ -13,7 +13,7 @@ import (
 	"github.com/evanoberholster/exif/mknote"
 )
 
-var Exif_ExposureProgramValues = map[int]string{
+var Exif_ExposureModeValues = map[int]string{
 	0:"Not Defined", 
 	1:"Manual", 
 	2:"Program AE", 
@@ -35,6 +35,17 @@ var Exif_MeteringModeValues = map[int]string{
 	5:"Multi-segment", 
 	6:"Partial", 
 	255:"Other",
+}
+
+var Exif_OrientationValues = map[int]string {
+	1:"Horizontal (normal)", 
+	2:"Mirror horizontal", 
+	3:"Rotate 180", 
+	4:"Mirror vertical", 
+	5:"Mirror horizontal and rotate 270 CW",
+	6:"Rotate 90 CW", 
+	7:"Mirror horizontal and rotate 90 CW", 
+	8:"Rotate 270 CW",
 }
 
 var Exif_FlashBoolValues = map[int]bool{
@@ -204,7 +215,7 @@ func ProcessCameraSettingsFields(tag *tiff.Tag, i int) (string) {
 }
 
 func Canon_CameraSettings(x *exif.Exif) (CameraSettings, error) {
-	var c CameraSettings
+	c := CameraSettings{}
 	tag, err := x.Get(mknote.Canon_CameraSettings) 
 	if err != nil {
 		return c, err
@@ -256,7 +267,7 @@ func ExposureBias(x *exif.Exif) (Rational, error) {
 	return r.Set(num,denom), err
 }
 
-func ExposureProgram(x *exif.Exif) (string, error) {
+func ExposureMode(x *exif.Exif) (string, error) {
 	tag, err := x.Get(exif.ExposureProgram)
 	if err != nil {
 		return "", err
@@ -265,7 +276,7 @@ func ExposureProgram(x *exif.Exif) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return Exif_ExposureProgramValues[v], nil
+	return Exif_ExposureModeValues[v], nil
 }
 
 func MeteringMode(x *exif.Exif) (string, error) {
@@ -278,6 +289,14 @@ func MeteringMode(x *exif.Exif) (string, error) {
 		return "", err
 	}
 	return Exif_MeteringModeValues[v], nil
+}
+
+func Orientation(x *exif.Exif) (int, error) {
+	i, err := x.Get(exif.Orientation)
+	if err != nil {
+		return 1, err
+	}
+	return i.Int(0)
 }
 
 func Flash(x *exif.Exif) (ExifFlash, error) {
@@ -330,6 +349,39 @@ type Metadata struct {
 	DublinCore		DublinCore 	`json:"DublinCore"`
 	XmpBase 		XmpBase 	`json:"XmpBase"`
 	Exif 			Exif 		`json:"Exif"`
+}
+
+// Exig
+
+type Exif struct {
+	ImageWidth              	int     		`json:"ImageWidth"`
+	ImageHeight             	int     		`json:"ImageHeight"`
+	CameraMake                  string  		`json:"CameraMake"`		  // OK
+	CameraModel                 string  		`json:"CameraModel"`	  // OK
+	CameraSerial				string 			`json:"CameraSerial"`	  // OK
+	LensModel					string 			`json:"LensModel"`		  // OK
+	LensSerial					string 			`json:"LensSerial"` 	  // OK
+	Artist                    	string  		`json:"Artist"` 		  // OK
+	Copyright                 	string  		`json:"Copyright"` 		  // OK
+	Aperture 					float32  		`json:"Aperture"` 		  // OK
+	ShutterSpeed 				Rational		`json:"ShutterSpeed"` 	  // OK
+	ISOSpeed                   	int     		`json:"ISO"`  			  // OK
+	ExposureBias 				Rational		`json:"ExposureBias"` 	  // OK
+	ExposureMode	          	string 	  		`json:"ExposureMode"`  	  // OK
+	MeteringMode				string 			`json:"MeteringMode"`	  // OK
+	Orientation             	int 	  		`json:"Orientation"`
+	Flash						ExifFlash		`json:"Flash"` 			  // OK
+	FocalLength 				float32			`json:"FocalLength"` 	  // OK
+	FocalLengthEqv 				float32			`json:"FocalLengthEqv"`   // mm
+	GPSLatitude 				float64 		`json:"GPSLatitude"`	  // OK
+	GPSLongitude 				float64 		`json:"GPSLongitude"`	  // OK
+	GPSAltitude 				float32			`json:"GPSAltitude"`	  // OK
+	GPSTimeStamp 				time.Time   	`json:"GPSTimeStamp"`	  // OK
+	DateTimeOriginal			time.Time 		`json:"DateTimeOriginal"` // OK
+	ModifyTimeStamp 			time.Time 		`json:"ModifyTimeStamp"`
+	Software					string 			`json:"Software"`		  // OK
+	ImageDescription			string 			`json:"ImageDescription"`
+	CameraSettings 				CameraSettings 	`json:"CameraSettings"`
 }
 
 // XMP

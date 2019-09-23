@@ -3,6 +3,7 @@ package tiff
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ import (
 // tiff data types.
 type Format int
 
+// Format Constants
 const (
 	IntVal Format = iota
 	FloatVal
@@ -25,7 +27,11 @@ const (
 	OtherVal
 )
 
-var ErrShortReadTagValue = errors.New("tiff: short read of tag value")
+// Tag Errors
+var (
+	ErrShortReadTagValue = errors.New("tiff: short read of tag value")
+	errUnhandledTagType  = errors.New("tiff: unhandled tag type")
+)
 
 var formatNames = map[Format]string{
 	IntVal:    "int",
@@ -39,6 +45,7 @@ var formatNames = map[Format]string{
 // DataType represents the basic tiff tag data types.
 type DataType uint16
 
+// Constants for DataType
 const (
 	DTByte      DataType = 1
 	DTAscii     DataType = 2
@@ -109,6 +116,9 @@ type Tag struct {
 	format    Format
 }
 
+// TagLengthCutoff limits tag size to avoid trying to read corrupted lengths and parsing potentially gigabytes of exif
+var TagLengthCutoff uint32 = 4 * 1024 * 1024
+
 // DecodeTag parses a tiff-encoded IFD tag from r and returns a Tag object. The
 // first read from r should be the first byte of the tag. ReadAt offsets should
 // generally be relative to the beginning of the tiff structure (not relative
@@ -138,9 +148,20 @@ func DecodeTag(r ReadAtReader, order binary.ByteOrder) (*Tag, error) {
 		return t, errors.New("invalid Count offset in tag")
 	}
 
-	valLen := typeSize[t.Type] * t.Count
-	if valLen == 0 {
-		return t, errors.New("zero length tag value")
+	// Ignore the value/offset if we don't know about the size of the type.
+	size, ok := typeSize[t.Type]
+	if !ok {
+		var ignore [4]byte
+		if _, err = io.ReadFull(r, ignore[:]); err != nil {
+			return t, errors.New("tiff: unknown tag offset read failed: " + err.Error())
+		}
+		return nil, errUnhandledTagType
+	}
+
+	valLen := size * t.Count
+	// avoid trying to read large (corrupted) lengths and parsing potentially gigabytes of exif
+	if TagLengthCutoff > 0 && valLen > TagLengthCutoff {
+		return t, fmt.Errorf("tiff: tag length too large: %v", valLen)
 	}
 
 	if valLen > 4 {
@@ -179,15 +200,12 @@ func (t *Tag) convertVals() error {
 
 	switch t.Type {
 	case DTAscii:
-		if len(t.Val) <= 0 {
-			break
-		}
-		nullPos := bytes.IndexByte(t.Val, 0)
-		if nullPos == -1 {
-			t.strVal = string(t.Val)
-		} else {
-			// ignore all trailing NULL bytes, in case of a broken t.Count
-			t.strVal = string(t.Val[:nullPos])
+		if len(t.Val) > 0 {
+			if index := bytes.IndexByte(t.Val, '\x00'); index != -1 {
+				t.strVal = string(t.Val[:index])
+			} else {
+				t.strVal = string(t.Val)
+			}
 		}
 	case DTByte:
 		var v uint8
@@ -326,12 +344,15 @@ func (t *Tag) typeErr(to Format) error {
 }
 
 // Rat returns the tag's i'th value as a rational number. It returns a nil and
-// an error if this tag's Format is not RatVal.  It panics for zero deminators
+// an error if this tag's Format is not RatVal.  It errors for zero deminators
 // or if i is out of range.
 func (t *Tag) Rat(i int) (*big.Rat, error) {
 	n, d, err := t.Rat2(i)
 	if err != nil {
 		return nil, err
+	}
+	if d == 0 {
+		return nil, errors.New("rational has zero-valued denominator")
 	}
 	return big.NewRat(n, d), nil
 }
@@ -351,6 +372,9 @@ func (t *Tag) Rat2(i int) (num, den int64, err error) {
 func (t *Tag) Int64(i int) (int64, error) {
 	if t.format != IntVal {
 		return 0, t.typeErr(IntVal)
+	}
+	if i >= len(t.intVals) {
+		return 0, errors.New("index out of range in intVals")
 	}
 	return t.intVals[i], nil
 }
@@ -395,9 +419,16 @@ func (t *Tag) String() string {
 	return fmt.Sprintf("%s", data)
 }
 
+// MarshalJSON - Marhsal the Tag in JSON format
 func (t *Tag) MarshalJSON() ([]byte, error) {
 	switch t.format {
-	case StringVal, UndefVal:
+	case StringVal:
+		if s, err := t.StringVal(); err != nil {
+			return []byte(`null`), err
+		} else {
+			return json.Marshal(s)
+		}
+	case UndefVal:
 		return nullString(t.Val), nil
 	case OtherVal:
 		return []byte(fmt.Sprintf("unknown tag type '%v'", t.Type)), nil
