@@ -1,13 +1,11 @@
-exif
-======
 
-[![GoDoc](https://godoc.org/github.com/rwcarlsen/goexif?status.svg)](https://godoc.org/github.com/rwcarlsen/goexif)
+# Exif
 
-[![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master)
+[![GoDoc](https://godoc.org/github.com/evanoberholster/exif?status.svg)](https://godoc.org/github.com/evanoberholster/exif) [![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master)
 
-Provides decoding of basic exif and tiff encoded data. Based on (https://github.com/rwcarlsen/goexif) 
+Provides decoding of basic exif and tiff encoded data.
 
-Suggestions and pull requests are welcome. 
+Suggestions and pull requests are welcome.
 
 Example usage:
 
@@ -56,3 +54,12 @@ func ExampleDecode() {
 }
 ```
 
+## Based On
+
+Based on [https://github.com/rwcarlsen/goexif](https://github.com/rwcarlsen/goexif)
+
+## LICENSE
+
+Copyright (c) 2019, Evan Oberholster & Contributors
+Copyright (c) 2016, Jerry Jacobs & Contributors
+Copyright (c) 2012, Robert Carlsen & Contributors
