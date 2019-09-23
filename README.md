@@ -1,7 +1,7 @@
 
 # Exif
 
-[![GoDoc](https://godoc.org/github.com/evanoberholster/exif?status.svg)](https://godoc.org/github.com/evanoberholster/exif) [![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master)
+[![GoDoc](https://godoc.org/github.com/evanoberholster/exif?status.svg)](https://godoc.org/github.com/evanoberholster/exif) [![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master) [![Build](https://travis-ci.com/evanoberholster/exif.svg?branch=master)](https://travis-ci.com/evanoberholster/exif.svg?branch=master)
 
 Provides decoding of basic exif and tiff encoded data.
 
