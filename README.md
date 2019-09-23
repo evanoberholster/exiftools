@@ -3,6 +3,8 @@ exif
 
 [![GoDoc](https://godoc.org/github.com/rwcarlsen/goexif?status.svg)](https://godoc.org/github.com/rwcarlsen/goexif)
 
+[![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master)
+
 Provides decoding of basic exif and tiff encoded data. Based on (https://github.com/rwcarlsen/goexif) 
 
 Suggestions and pull requests are welcome. 
