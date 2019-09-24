@@ -1,5 +1,6 @@
 package exif
 
+// FieldName - Name of Tag field EXIF
 type FieldName string
 
 // UnknownPrefix is used as the first part of field names for decoded tags for
@@ -90,9 +91,8 @@ const (
 	LensMake                   FieldName = "LensMake"
 	LensModel                  FieldName = "LensModel"
 
-	SerialNumber			   FieldName = "SerialNumber"
-	LensSerialNumber 		   FieldName = "LensSerialNumber"
-
+	SerialNumber     FieldName = "SerialNumber"
+	LensSerialNumber FieldName = "LensSerialNumber"
 )
 
 // Windows-specific tags

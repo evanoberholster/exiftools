@@ -381,7 +381,13 @@ func (t *Tag) Int64(i int) (int64, error) {
 
 // Int returns the tag's i'th value as an integer. It returns an error if the
 // tag's Format is not IntVal. It panics if i is out of range.
-func (t *Tag) Int(i int) (int, error) {
+func (t *Tag) Int(i int) (r int, err error) {
+	defer func() {
+		// Catch errors
+		if state := recover(); state != nil {
+			err = errors.New("index out of range in Int")
+		}
+	}()
 	if t.format != IntVal {
 		return 0, t.typeErr(IntVal)
 	}

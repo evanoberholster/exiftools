@@ -19,8 +19,17 @@ import (
 	"github.com/evanoberholster/exif/tiff"
 )
 
+// ExifLengthCutoff limits the exif size to avoid trying to read corrupted lengths and parsing potentially gigabytes of exif
+var ExifLengthCutoff = 4 * 1024 * 1024
+
+// Exif Errors
+var (
+	ErrNoExif          = errors.New("no exif data")
+	ErrExifHeaderError = errors.New("exif header error")
+)
+
 const (
-	jpeg_APP1 = 0xE1
+	jpegAPP1 = 0xE1
 
 	exifPointer    = 0x8769
 	gpsPointer     = 0x8825
@@ -53,6 +62,7 @@ func (tag TagNotPresentError) Error() string {
 	return fmt.Sprintf("exif: tag %q is not present", string(tag))
 }
 
+// IsTagNotPresentError -
 func IsTagNotPresentError(err error) bool {
 	_, ok := err.(TagNotPresentError)
 	return ok
@@ -90,7 +100,7 @@ func (te tiffErrors) Error() string {
 	return strings.Join(allErrors, "\n")
 }
 
-// IsCriticalError, given the error returned by Decode, reports whether the
+// IsCriticalError - given the error returned by Decode, reports whether the
 // returned *Exif may contain usable information.
 func IsCriticalError(err error) bool {
 	_, ok := err.(tiffErrors)
@@ -270,8 +280,9 @@ func Decode(r io.Reader) (*Exif, error) {
 		tif, err = tiff.Decode(tr)
 		er = bytes.NewReader(b.Bytes())
 	case assumeJPEG:
+		fmt.Println("JPEG")
 		// Locate the JPEG APP1 header.
-		sec, err = newAppSec(jpeg_APP1, r)
+		sec, err = newAppSec(jpegAPP1, r)
 		if err != nil {
 			return nil, err
 		}
@@ -392,6 +403,7 @@ func (x *Exif) DateTime() (time.Time, error) {
 	return time.ParseInLocation(exifTimeLayout, dateStr, timeZone)
 }
 
+// TimeZone -
 func (x *Exif) TimeZone() (*time.Location, error) {
 	// TODO: parse more timezone fields (e.g. Nikon WorldTime).
 	timeInfo, err := x.Get("Canon.TimeInfo")
@@ -579,7 +591,7 @@ func (x *Exif) JpegThumbnail() ([]byte, error) {
 	return x.Raw[start : start+l], nil
 }
 
-// MarshalJson implements the encoding/json.Marshaler interface providing output of
+// MarshalJSON implements the encoding/json.Marshaler interface providing output of
 // all EXIF fields present (names and values).
 func (x Exif) MarshalJSON() ([]byte, error) {
 	return json.Marshal(x.main)
@@ -610,7 +622,7 @@ func newAppSec(marker byte, r io.Reader) (*appSec, error) {
 		}
 
 		dataLenBytes := make([]byte, 2)
-		for k, _ := range dataLenBytes {
+		for k := range dataLenBytes {
 			c, err := br.ReadByte()
 			if err != nil {
 				return nil, err

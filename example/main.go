@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
@@ -13,11 +12,13 @@ import (
 
 	"github.com/evanoberholster/exif/exif"
 	"github.com/evanoberholster/exif/mknote"
-	"trimmer.io/go-xmp/xmp"
+	"github.com/evanoberholster/exif/tiff"
+	"github.com/evanoberholster/exif/xmp"
+	"github.com/h2non/filetype"
 )
 
 func main() {
-	fname := "../../test/img/4.CR2" //.jpg"
+	fname := "../../test/img/1.heic" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -27,44 +28,37 @@ func main() {
 
 	start := time.Now()
 	metadata(f)
-
-	elapsed := time.Since(start)
-	log.Println(elapsed)
+	log.Println(time.Since(start))
 }
 
 // NewMetadata -
-func NewMetadata(file *os.File) *Metadata {
+func NewMetadata(f *os.File) *Metadata {
+	f.Seek(0, 0)
 	// Check fileSize
-	fi, err := file.Stat()
+	fi, err := f.Stat()
 	if err != nil {
 		log.Println(err)
 	}
 
+	kind, _ := filetype.MatchReader(f)
+
 	// Check file MimeType
 	return &Metadata{
 		FileSize: fi.Size(),
-		MIMEType: "image/jpeg",
+		MIMEType: kind.MIME.Value,
 	}
 
 }
 
 // XMP
 func (m *Metadata) xmpMetadata(f *os.File) error {
-	f.Seek(0, 0)
-
-	bb, err := xmp.ScanPackets(f)
-	if (err != nil && err != io.EOF) || len(bb) == 0 {
+	doc, err := xmp.ReadXMPDocument(f)
+	if err != nil {
 		return err
 	}
 
-	doc := &xmp.Document{}
-	if err := xmp.Unmarshal(bb[0], doc); err != nil {
-		return err
-	}
-
-	m.DublinCore = xmpDublinCore(doc)
-
-	m.XmpBase = xmpBase(doc)
+	m.DublinCore = xmp.DublinCore(doc)
+	m.XmpBase = xmp.Base(doc)
 
 	return nil
 }
@@ -78,10 +72,11 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	// Canon are supported.
 	exif.RegisterParsers(mknote.All...)
 
-	x, err := exif.Decode(f)
+	x, err := exif.DecodeWithParseHeader(f)
 	if err != nil {
 		return err
 	}
+	// FocalLengthIn35mmFilm
 
 	log.Println(x)
 
@@ -93,35 +88,32 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.GPSLatitude, m.Exif.GPSLongitude, _ = x.LatLong()
 
 	m.Exif.DateTimeOriginal, _ = x.DateTime()
-	m.Exif.FocalLength, _ = x.FocalLength()
+	m.Exif.FocalLength, _ = x.FocalLength(exif.FocalLength)
 
-	m.Exif.FocalLengthEqv, _ = FocalLengthIn35mmFilm(x)
-	m.Exif.ExposureMode, _ = GetExposureMode(x)
-	m.Exif.MeteringMode, _ = GetMeteringMode(x)
-
-	m.Exif.Flash, _ = Flash(x)
-
+	m.Exif.FocalLengthEqv, _ = x.FocalLength(exif.FocalLengthIn35mmFilm)
+	m.Exif.ExposureMode, _ = x.GetExposureMode()
+	m.Exif.MeteringMode, _ = x.GetMeteringMode()
+	m.Exif.Flash, _ = x.GetFlashMode()
 	// Image Size
 	m.Exif.ImageWidth, m.Exif.ImageHeight = GetImageSize(x)
+	m.Exif.CameraMake, _ = x.GetString(exif.Make)
+	m.Exif.CameraModel, _ = x.GetString(exif.Model)
+	m.Exif.CameraSerial, _ = x.GetString(exif.SerialNumber)
+	m.Exif.Artist, _ = x.GetString(exif.Artist)
+	m.Exif.Copyright, _ = x.GetString(exif.Copyright)
+	m.Exif.Software, _ = x.GetString(exif.Software)
+	m.Exif.ImageDescription, _ = x.GetString(exif.ImageDescription)
+	m.Exif.Orientation, _ = x.GetOrientation()
+	m.Exif.LensModel, _ = x.GetString(exif.LensModel)
+	m.Exif.LensSerial, _ = x.GetString(exif.LensSerialNumber)
 
-	m.Exif.CameraMake, _ = FetchString(x, exif.Make)
-	m.Exif.CameraModel, _ = FetchString(x, exif.Model)
-	m.Exif.CameraSerial, _ = FetchString(x, exif.SerialNumber)
-	m.Exif.Artist, _ = FetchString(x, exif.Artist)
-	m.Exif.Copyright, _ = FetchString(x, exif.Copyright)
-	m.Exif.Software, _ = FetchString(x, exif.Software)
-	m.Exif.ImageDescription, _ = FetchString(x, exif.ImageDescription)
-	m.Exif.Orientation, _ = Orientation(x)
+	m.Exif.ISOSpeed, _ = x.GetISOSpeed()
+	m.Exif.Aperture, _ = x.GetAperture()
+	m.Exif.ShutterSpeed, _ = x.GetShutterSpeed()
+	m.Exif.ExposureBias, _ = x.GetExposureBias()
 
-	m.Exif.LensModel, _ = FetchString(x, exif.LensModel)
-	m.Exif.LensSerial, _ = FetchString(x, exif.LensSerialNumber)
-
-	m.Exif.ISOSpeed, _ = ISOSpeed(x)
-	m.Exif.Aperture, _ = Aperture(x)
-	m.Exif.ShutterSpeed, _ = GetShutterSpeed(x)
-	m.Exif.ExposureBias, _ = ExposureBias(x)
-
-	//m.Exif.CameraSettings, err = CanonCameraSettings(x)
+	cr := new(mknote.CanonRaw)
+	m.Exif.CameraSettings, err = cr.RawCameraSettings(x)
 
 	// Two convenience functions exist for date/time taken and GPS coords:
 	tm, _ := x.DateTime()
@@ -147,13 +139,10 @@ func metadata(f *os.File) {
 
 	a, _ := json.Marshal(m)
 	colorJSON(a)
-
-	//log.Println(m)
-	//log.Println(tag, tag.Count, tag.Type)
+	fmt.Println(m)
 }
 
 func colorJSON(b []byte) {
-
 	var obj map[string]interface{}
 	json.Unmarshal([]byte(b), &obj)
 	// Make a custom formatter with indent set
@@ -167,22 +156,30 @@ func colorJSON(b []byte) {
 
 // FocalLengthIn35mmFilm -
 func FocalLengthIn35mmFilm(x *exif.Exif) (float32, error) {
-	_, err := x.Get(exif.FocalLengthIn35mmFilm)
+	t, err := x.Get(exif.FocalLengthIn35mmFilm)
 	if err != nil {
 		return 0.0, err
 	}
-
-	//log.Println(tag.Type, tag.Count, tag)
-	return 0.0, nil
+	i, err := t.Int(0)
+	return float32(i), err
 }
 
 // GetImageSize -
 func GetImageSize(x *exif.Exif) (int, int) {
-	w, err := x.Get(exif.ImageWidth)
-	l, err := x.Get(exif.ImageLength)
+	var err error
+	var w, l *tiff.Tag
+
+	// Get Width Tag, if error check Pixel Dimension Tag
+	w, err = x.Get(exif.ImageWidth)
 	if err != nil {
-		log.Println(err)
-		return 0, 0
+		w, err = x.Get(exif.PixelXDimension)
+		l, err = x.Get(exif.PixelYDimension)
+		if err != nil {
+			log.Println(err)
+			return 0, 0
+		}
+	} else {
+		l, err = x.Get(exif.ImageLength)
 	}
 	//log.Println(w.Type, l.Type, w.Count)
 	width, _ := w.Int(0)

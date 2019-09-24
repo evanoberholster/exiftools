@@ -1,11 +1,15 @@
-package main
+package models
 
 // FlashMode - Mode in which the camera Flash was used.
 // (bool) - true if flash was fired
 // (uint8) - value of FlashMode
 type FlashMode struct {
-	bool
-	uint8
+	bool  `json:"bool"`
+	uint8 `json:"mode"`
+}
+
+func (fm FlashMode) String() string {
+	return FlashValues[fm.uint8]
 }
 
 // NewFlashMode - Create new Flash Mode
