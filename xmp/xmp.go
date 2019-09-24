@@ -10,7 +10,7 @@ import (
 	"trimmer.io/go-xmp/xmp"
 )
 
-// ReadXMPDocument -
+// ReadXMPDocument - Read from file to XMP Document
 func ReadXMPDocument(f *os.File) (*xmp.Document, error) {
 	f.Seek(0, 0)
 
@@ -28,6 +28,7 @@ func ReadXMPDocument(f *os.File) (*xmp.Document, error) {
 	return doc, nil
 }
 
+// Base - Extract XmpBase from XMP Document
 func Base(m *xmp.Document) models.XmpBase {
 	var b models.XmpBase
 	c := xmpbase.FindModel(m)
@@ -45,6 +46,7 @@ func Base(m *xmp.Document) models.XmpBase {
 	return b
 }
 
+// DublinCore - Extract DublinCore from XMP Document
 func DublinCore(m *xmp.Document) models.DublinCore {
 	var d models.DublinCore
 	c := dc.FindModel(m)

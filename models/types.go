@@ -64,7 +64,7 @@ var meteringModeValues = map[MeteringMode]string{
 	255: "Other",
 }
 
-// ExposureBias - [0] Demoninator [1] Numerator
+// ExposureBias - [0] Denominator [1] Numerator
 type ExposureBias [2]int64
 
 // NewExposureBias - Set ExposureBias from Numerator and Denominator
@@ -77,7 +77,7 @@ func (eb ExposureBias) String() string {
 	return fmt.Sprintf("%d/%d", eb[1], eb[0])
 }
 
-// ShutterSpeed - [0] Demoninator [1] Numerator
+// ShutterSpeed - [0] Denominator [1] Numerator
 type ShutterSpeed [2]int64
 
 // NewShutterSpeed - Set ShutterSpeed from Numerator and Denominator
