@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/evanoberholster/exif/exif"
-	"github.com/evanoberhoslter/exif/tiff"
+	"github.com/evanoberholster/exif/tiff"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 
 # Exif
 
-[![GoDoc](https://godoc.org/github.com/evanoberholster/exif?status.svg)](https://godoc.org/github.com/evanoberholster/exif) [![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master) [![Build](https://travis-ci.com/evanoberholster/exif.svg?branch=master)](https://travis-ci.com/evanoberholster/exif.svg?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/evanoberholster/exif)](https://goreportcard.com/report/github.com/evanoberholster/exif)
+[![GoDoc](https://godoc.org/github.com/evanoberholster/exif?status.svg)](https://godoc.org/github.com/evanoberholster/exif) [![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master) [![Build](https://travis-ci.com/evanoberholster/exif.svg?branch=master)](https://travis-ci.com/evanoberholster/exif?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/evanoberholster/exif)](https://goreportcard.com/report/github.com/evanoberholster/exif)
 
 Provides decoding of basic exif and tiff encoded data.
 
@@ -16,8 +16,8 @@ import (
    "fmt"
    "log"
    "os"
-   "github.com/rwcarlsen/goexif/exif"
-   "github.com/rwcarlsen/goexif/mknote"
+   "github.com/evanoberholster/exif/exif"
+   "github.com/evanoberholster/exif/mknote"
 )
 
 func ExampleDecode() {
