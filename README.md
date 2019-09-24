@@ -1,7 +1,11 @@
 
 # Exif
 
-[![GoDoc](https://godoc.org/github.com/evanoberholster/exif?status.svg)](https://godoc.org/github.com/evanoberholster/exif) [![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master) [![Build](https://travis-ci.com/evanoberholster/exif.svg?branch=master)](https://travis-ci.com/evanoberholster/exif?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/evanoberholster/exif)](https://goreportcard.com/report/github.com/evanoberholster/exif)
+[![License][License-Image]][License-Url]
+[![Godoc][Godoc-Image]][Godoc-Url]
+[![ReportCard][ReportCard-Image]][ReportCard-Url]
+[![Coverage Status](https://coveralls.io/repos/github/evanoberholster/exif/badge.svg?branch=master)](https://coveralls.io/github/evanoberholster/exif?branch=master)
+[![Build][Build-Status-Image]][Build-Status-Url]
 
 Provides decoding of basic exif and tiff encoded data.
 
@@ -57,6 +61,8 @@ func ExampleDecode() {
 
 Based on [https://github.com/rwcarlsen/goexif](https://github.com/rwcarlsen/goexif)
 
+Inspired by [https://github.com/dsoprea/go-exif](https://github.com/dsoprea/go-exif)
+
 ## LICENSE
 
 Copyright (c) 2019, Evan Oberholster & Contributors
@@ -64,3 +70,12 @@ Copyright (c) 2019, Evan Oberholster & Contributors
 Copyright (c) 2016, Jerry Jacobs & Contributors
 
 Copyright (c) 2012, Robert Carlsen & Contributors
+
+[License-Url]: https://opensource.org/licenses/BSD-2-Clause
+[License-Image]: https://img.shields.io/badge/license-2%20Clause%20BSD-blue.svg?maxAge=2592000
+[Godoc-Url]: https://godoc.org/github.com/evanoberholster/exif
+[Godoc-Image]: https://godoc.org/github.com/evanoberholster/exif?status.svg
+[ReportCard-Url]: https://goreportcard.com/report/github.com/evanoberholster/exif
+[ReportCard-Image]: https://goreportcard.com/badge/github.com/evanoberholster/exif
+[Build-Status-Url]: https://travis-ci.com/evanoberholster/exif?branch=master
+[Build-Status-Image]: https://travis-ci.com/evanoberholster/exif.svg?branch=master

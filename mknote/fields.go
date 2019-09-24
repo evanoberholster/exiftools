@@ -18,7 +18,7 @@ const (
 	FlashSetting               exif.FieldName = "FlashSetting"
 	FlashDevice                exif.FieldName = "FlashDevice"
 	WhiteBalanceBias           exif.FieldName = "WhiteBalanceBias"
-	WB_RBLevels                exif.FieldName = "WB_RBLevels"
+	WBRBLevels                 exif.FieldName = "WBRBLevels"
 	ProgramShift               exif.FieldName = "ProgramShift"
 	ExposureDiff               exif.FieldName = "ExposureDiff"
 	ISOSelection               exif.FieldName = "ISOSelection"

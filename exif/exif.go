@@ -665,3 +665,111 @@ func (app *appSec) exifReader() (*bytes.Reader, error) {
 	}
 	return bytes.NewReader(app.data[6:]), nil
 }
+
+// DecodeWithParseHeader parses EXIF data from r (a TIFF, JPEG, HEIF, or rawExif)
+// and returns a queryable Exif object. After the EXIF data section is
+// called and the TIFF structure is decoded, each registered parser is
+// called (in order of registration). If one parser returns an error,
+// decoding terminates and the remaining parsers are not called.
+//
+// Limits the length of Exif data read to increase speed from large files.
+// The limit is defined in ExifLengthCutoff.
+func DecodeWithParseHeader(r io.Reader) (x *Exif, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = fmt.Errorf("Exif Error: %v", err)
+		}
+	}()
+	r2 := io.LimitReader(r, int64(ExifLengthCutoff))
+	data, _ := ioutil.ReadAll(r2)
+
+	foundAt := -1
+	for i := 0; i < len(data); i++ {
+		if err = parseExifHeader(data[i:]); err == nil {
+			foundAt = i
+			break
+		}
+	}
+	if err != nil {
+		return
+	}
+
+	er := bytes.NewReader(data[foundAt:])
+	tif, err := tiff.Decode(er)
+
+	er.Seek(0, 0)
+	raw, err := ioutil.ReadAll(er)
+	if err != nil {
+		return nil, decodeError{cause: err}
+	}
+
+	// build an exif structure from the tiff
+	x = &Exif{
+		main: map[FieldName]*tiff.Tag{},
+		Tiff: tif,
+		Raw:  raw,
+	}
+
+	for i, p := range parsers {
+		if err := p.Parse(x); err != nil {
+			if _, ok := err.(tiffErrors); ok {
+				return x, err
+			}
+			// This should never happen, as Parse always returns a tiffError
+			// for now, but that could change.
+			return x, fmt.Errorf("exif: parser %v failed (%v)", i, err)
+		}
+	}
+
+	return x, nil
+}
+
+// parseExifHeader is based on https://github.com/dsoprea/go-exif package.
+// It traverses the data object until it finds an Exif Header. This is called
+// from the DecodeWithParseHeader method.
+// Good reference:
+//
+//      CIPA DC-008-2016; JEITA CP-3451D
+//      -> http://www.cipa.jp/std/documents/e/DC-008-Translation-2016-E.pdf
+func parseExifHeader(data []byte) error {
+
+	if len(data) < 2 {
+		return fmt.Errorf("Not enough data for EXIF header (1): (%d)", len(data))
+	}
+
+	byteOrderBytes := [2]byte{data[0], data[1]}
+
+	byteOrder, found := byteOrderLookup[byteOrderBytes]
+	if found == false {
+		return fmt.Errorf("EXIF byte-order not recognized: [%v]", byteOrderBytes)
+	}
+
+	if len(data) < 4 {
+		return fmt.Errorf("Not enough data for EXIF header (2): (%d)", len(data))
+	}
+
+	fixedBytes := [2]byte{data[2], data[3]}
+	expectedFixedBytes := exifFixedBytesLookup[byteOrder]
+	if fixedBytes != expectedFixedBytes {
+		return fmt.Errorf("EXIF header fixed-bytes should be [%v] but are: [%v]", expectedFixedBytes, fixedBytes)
+	}
+
+	if len(data) < 2 {
+		return fmt.Errorf("Not enough data for EXIF header (3): (%d)", len(data))
+	}
+
+	return nil
+}
+
+var (
+	exifFixedBytesLookup = map[binary.ByteOrder][2]byte{
+		binary.LittleEndian: [2]byte{0x2a, 0x00},
+		binary.BigEndian:    [2]byte{0x00, 0x2a},
+	}
+	byteOrderLookup = map[[2]byte]binary.ByteOrder{
+		bigEndianBoBytes:    binary.BigEndian,
+		littleEndianBoBytes: binary.LittleEndian,
+	}
+	bigEndianBoBytes    = [2]byte{'M', 'M'}
+	littleEndianBoBytes = [2]byte{'I', 'I'}
+)

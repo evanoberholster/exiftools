@@ -1,3 +1,4 @@
+// Package xmp aliases the package foung in (trimmer.io/go-xmp/xmp)
 package xmp
 
 import (

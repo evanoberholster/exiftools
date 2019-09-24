@@ -4,8 +4,8 @@ package models
 // (bool) - true if flash was fired
 // (uint8) - value of FlashMode
 type FlashMode struct {
-	bool  `json:"bool"`
-	uint8 `json:"mode"`
+	bool
+	uint8
 }
 
 func (fm FlashMode) String() string {

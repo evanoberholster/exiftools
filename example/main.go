@@ -127,7 +127,6 @@ func metadata(f *os.File) {
 	if err != nil {
 		log.Println(err)
 	}
-
 	a, _ := json.Marshal(m)
 	colorJSON(a)
 	fmt.Println(m)

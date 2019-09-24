@@ -17,17 +17,7 @@ type CameraSettings struct {
 	MeteringMode    string `json:"MeteringMode"`
 }
 
-// CanonGetField -
-func (cs CameraSettings) CanonGetField(tag *tiff.Tag, i int) string {
-	a, err := tag.Int(i)
-	if err != nil {
-		return ""
-	}
-	return CanonCameraSettingsFields[i][a]
-}
-
-//
-func ProcessCameraSettingsFields(tag *tiff.Tag, i int) string {
+func processCameraSettingsFields(tag *tiff.Tag, i int) string {
 	a, err := tag.Int(i)
 	if err != nil {
 		return ""

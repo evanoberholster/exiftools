@@ -7,13 +7,15 @@ import (
 	"time"
 
 	"github.com/evanoberholster/exif/models"
-
 	"github.com/evanoberholster/exif/xmp"
 )
 
+const JPEGTestFile = "../exif/samples/test.jpg"
+const XMPTestFile = "../exif/samples/test.xmp"
+
 // TestReadXMPDocument - Test needs improvement
 func TestReadXMPDocument(t *testing.T) {
-	f, err := os.Open("../test/test.jpg")
+	f, err := os.Open(JPEGTestFile)
 	if err != nil {
 		t.Fatalf("Could not open test file: %v", err)
 	}
@@ -25,7 +27,7 @@ func TestReadXMPDocument(t *testing.T) {
 
 // TestUnMarshal - Test needs improvement
 func TestUnMarshal(t *testing.T) {
-	f, err := os.Open("../test/test.xmp")
+	f, err := os.Open(XMPTestFile)
 	if err != nil {
 		t.Fatalf("Could not open test file: %v", err)
 	}
@@ -40,7 +42,7 @@ func TestUnMarshal(t *testing.T) {
 }
 
 func TestBase(t *testing.T) {
-	f, err := os.Open("../test/test.xmp")
+	f, err := os.Open(XMPTestFile)
 	if err != nil {
 		t.Fatalf("Could not open test file: %v", err)
 	}
@@ -90,7 +92,7 @@ func TestBase(t *testing.T) {
 }
 
 func TestDublinCore(t *testing.T) {
-	f, err := os.Open("../test/test.xmp")
+	f, err := os.Open(XMPTestFile)
 	if err != nil {
 		t.Fatalf("Could not open test file: %v", err)
 	}
