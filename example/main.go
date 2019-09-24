@@ -12,13 +12,12 @@ import (
 
 	"github.com/evanoberholster/exif/exif"
 	"github.com/evanoberholster/exif/mknote"
-	"github.com/evanoberholster/exif/tiff"
 	"github.com/evanoberholster/exif/xmp"
-	"github.com/h2non/filetype"
+	"github.com/evanoberholster/filetype"
 )
 
 func main() {
-	fname := "../../test/img/1.heic" //.jpg"
+	fname := "../../test/img/1.CR2" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -76,15 +75,11 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	if err != nil {
 		return err
 	}
-	// FocalLengthIn35mmFilm
+	//log.Println(x)
 
-	log.Println(x)
+	m.Exif.GPSAltitude, _ = x.GPSAltitude()
+	m.Exif.GPSTimeStamp, _ = x.GPSTimeStamp()
 
-	m.Exif.GPSAltitude, err = x.GPSAltitude()
-	m.Exif.GPSTimeStamp, err = x.GPSTimeStamp()
-	if err != nil {
-		log.Println(err)
-	}
 	m.Exif.GPSLatitude, m.Exif.GPSLongitude, _ = x.LatLong()
 
 	m.Exif.DateTimeOriginal, _ = x.DateTime()
@@ -95,7 +90,7 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.MeteringMode, _ = x.GetMeteringMode()
 	m.Exif.Flash, _ = x.GetFlashMode()
 	// Image Size
-	m.Exif.ImageWidth, m.Exif.ImageHeight = GetImageSize(x)
+	m.Exif.ImageWidth, m.Exif.ImageHeight = x.GetImageSize()
 	m.Exif.CameraMake, _ = x.GetString(exif.Make)
 	m.Exif.CameraModel, _ = x.GetString(exif.Model)
 	m.Exif.CameraSerial, _ = x.GetString(exif.SerialNumber)
@@ -114,10 +109,6 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 
 	cr := new(mknote.CanonRaw)
 	m.Exif.CameraSettings, err = cr.RawCameraSettings(x)
-
-	// Two convenience functions exist for date/time taken and GPS coords:
-	tm, _ := x.DateTime()
-	fmt.Println("Taken: ", tm)
 
 	return nil
 }
@@ -152,37 +143,4 @@ func colorJSON(b []byte) {
 	// Marshall the Colorized JSON
 	s, _ := f.Marshal(obj)
 	fmt.Println(string(s))
-}
-
-// FocalLengthIn35mmFilm -
-func FocalLengthIn35mmFilm(x *exif.Exif) (float32, error) {
-	t, err := x.Get(exif.FocalLengthIn35mmFilm)
-	if err != nil {
-		return 0.0, err
-	}
-	i, err := t.Int(0)
-	return float32(i), err
-}
-
-// GetImageSize -
-func GetImageSize(x *exif.Exif) (int, int) {
-	var err error
-	var w, l *tiff.Tag
-
-	// Get Width Tag, if error check Pixel Dimension Tag
-	w, err = x.Get(exif.ImageWidth)
-	if err != nil {
-		w, err = x.Get(exif.PixelXDimension)
-		l, err = x.Get(exif.PixelYDimension)
-		if err != nil {
-			log.Println(err)
-			return 0, 0
-		}
-	} else {
-		l, err = x.Get(exif.ImageLength)
-	}
-	//log.Println(w.Type, l.Type, w.Count)
-	width, _ := w.Int(0)
-	length, _ := l.Int(0)
-	return width, length
 }

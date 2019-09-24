@@ -2,6 +2,7 @@ package exif
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -9,6 +10,28 @@ import (
 	"github.com/evanoberholster/exif/models"
 	"github.com/evanoberholster/exif/tiff"
 )
+
+// GetImageSize - Get Image Width and Height
+func (x *Exif) GetImageSize() (uint, uint) {
+	var err error
+	var w, l *tiff.Tag
+
+	// Get Width Tag, if error check Pixel Dimension Tag
+	w, err = x.Get(ImageWidth)
+	if err != nil {
+		w, err = x.Get(PixelXDimension)
+		l, err = x.Get(PixelYDimension)
+		if err != nil {
+			log.Println(err)
+			return 0, 0
+		}
+	} else {
+		l, err = x.Get(ImageLength)
+	}
+	width, _ := w.Int(0)
+	length, _ := l.Int(0)
+	return uint(width), uint(length)
+}
 
 // GetOrientation - Get Image Orientation from Exif
 // (Orientation) Tag

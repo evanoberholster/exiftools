@@ -18,8 +18,8 @@ type Metadata struct {
 
 // Exif Metadata
 type Exif struct {
-	ImageWidth       int                   `json:"ImageWidth"`
-	ImageHeight      int                   `json:"ImageHeight"`
+	ImageWidth       uint                  `json:"ImageWidth"`
+	ImageHeight      uint                  `json:"ImageHeight"`
 	CameraMake       string                `json:"CameraMake"`       // OK
 	CameraModel      string                `json:"CameraModel"`      // OK
 	CameraSerial     string                `json:"CameraSerial"`     // OK
