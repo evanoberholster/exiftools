@@ -1,7 +1,6 @@
 package xmp_test
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -10,43 +9,50 @@ import (
 	"github.com/evanoberholster/exif/models"
 
 	"github.com/evanoberholster/exif/xmp"
-
-	xmp2 "trimmer.io/go-xmp/xmp"
 )
 
-func LoadTestFile() ([]byte, error) {
+// TestReadXMPDocument - Test needs improvement
+func TestReadXMPDocument(t *testing.T) {
+	f, err := os.Open("../test/test.jpg")
+	if err != nil {
+		t.Fatalf("Could not open test file: %v", err)
+	}
+	_, err = xmp.ReadXMPDocument(f)
+	if err != nil {
+		t.Fatalf("Could not read test XMP file: %v", err)
+	}
+}
+
+// TestUnMarshal - Test needs improvement
+func TestUnMarshal(t *testing.T) {
 	f, err := os.Open("../test/test.xmp")
 	if err != nil {
-		return []byte{}, fmt.Errorf("Could not open test file: %v", err)
+		t.Fatalf("Could not open test file: %v", err)
 	}
 	bb, err := ioutil.ReadAll(f)
 	if err != nil {
-		return []byte{}, fmt.Errorf("Could not read test file: %v", err)
+		t.Fatalf("Could not read test file: %v", err)
 	}
-	return bb, nil
-}
-
-// TestReadXMPDocument - Need better test
-func TestReadXMPDocument(t *testing.T) {
-	bb, err := LoadTestFile()
+	_, err = xmp.Unmarshal(bb)
 	if err != nil {
-		t.Error(err)
-	}
-	doc := &xmp2.Document{}
-	if err := xmp2.Unmarshal(bb, doc); err != nil {
 		t.Fatalf("Could not Unmarshal test file: %v", err)
 	}
 }
 
 func TestBase(t *testing.T) {
-	bb, err := LoadTestFile()
+	f, err := os.Open("../test/test.xmp")
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("Could not open test file: %v", err)
 	}
-	doc := &xmp2.Document{}
-	if err := xmp2.Unmarshal(bb, doc); err != nil {
+	bb, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Fatalf("Could not read test file: %v", err)
+	}
+	doc, err := xmp.Unmarshal(bb)
+	if err != nil {
 		t.Fatalf("Could not Unmarshal test file: %v", err)
 	}
+
 	createDate, _ := time.Parse(time.RFC3339, "2018-04-14T15:33:20.61Z")
 	modifyDate, _ := time.Parse(time.RFC3339, "2018-04-14T15:33:20.61Z")
 	metadataDate, _ := time.Parse(time.RFC3339, "2018-04-16T08:50:26.23Z")
@@ -84,12 +90,16 @@ func TestBase(t *testing.T) {
 }
 
 func TestDublinCore(t *testing.T) {
-	bb, err := LoadTestFile()
+	f, err := os.Open("../test/test.xmp")
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("Could not open test file: %v", err)
 	}
-	doc := &xmp2.Document{}
-	if err := xmp2.Unmarshal(bb, doc); err != nil {
+	bb, err := ioutil.ReadAll(f)
+	if err != nil {
+		t.Fatalf("Could not read test file: %v", err)
+	}
+	doc, err := xmp.Unmarshal(bb)
+	if err != nil {
 		t.Fatalf("Could not Unmarshal test file: %v", err)
 	}
 

@@ -28,6 +28,13 @@ func ReadXMPDocument(f *os.File) (*xmp.Document, error) {
 	return doc, nil
 }
 
+// Unmarshal - Unmarshal XMP Document
+func Unmarshal(bb []byte) (*xmp.Document, error) {
+	doc := &xmp.Document{}
+	err := xmp.Unmarshal(bb, doc)
+	return doc, err
+}
+
 // Base - Extract XmpBase from XMP Document
 func Base(m *xmp.Document) models.XmpBase {
 	var b models.XmpBase

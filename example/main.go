@@ -108,7 +108,7 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.ExposureBias, _ = x.GetExposureBias()
 
 	cr := new(mknote.CanonRaw)
-	m.Exif.CameraSettings, err = cr.RawCameraSettings(x)
+	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)
 
 	return nil
 }

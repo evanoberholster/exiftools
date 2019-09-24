@@ -20,13 +20,14 @@ func (x *Exif) GetImageSize() (uint, uint) {
 	w, err = x.Get(ImageWidth)
 	if err != nil {
 		w, err = x.Get(PixelXDimension)
-		l, err = x.Get(PixelYDimension)
 		if err != nil {
 			log.Println(err)
 			return 0, 0
 		}
+		l, _ = x.Get(PixelYDimension)
+
 	} else {
-		l, err = x.Get(ImageLength)
+		l, _ = x.Get(ImageLength)
 	}
 	width, _ := w.Int(0)
 	length, _ := l.Int(0)
@@ -211,7 +212,7 @@ func (x *Exif) GPSTimeStamp() (time.Time, error) {
 	}
 	exifTimeLayout := "2006:01:02"
 
-	dateStr, err := dS.StringVal()
+	dateStr, _ := dS.StringVal()
 
 	hour := calcTimeHelper(tS.Rat2(0))
 	min := calcTimeHelper(tS.Rat2(1))
