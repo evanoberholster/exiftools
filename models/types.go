@@ -5,6 +5,13 @@ import (
 	"strconv"
 )
 
+// Unknown variables
+var (
+	NoFlashFired        = FlashMode{false, 0}
+	UnkownExposureMode  = ExposureMode(0)
+	UnknownMeteringMode = MeteringMode(0)
+)
+
 // ExposureMode - Mode in which the Exposure was taken.
 type ExposureMode uint8
 
@@ -17,9 +24,6 @@ func NewExposureMode(m int) ExposureMode {
 func (em ExposureMode) String() string {
 	return exposureModeValues[em]
 }
-
-// UnkownExposureMode - Unknown Exposure Mode
-var UnkownExposureMode = ExposureMode(0)
 
 // ExposureModeValues -
 var exposureModeValues = map[ExposureMode]string{
@@ -47,9 +51,6 @@ func NewMeteringMode(m int) MeteringMode {
 func (mm MeteringMode) String() string {
 	return meteringModeValues[mm]
 }
-
-// UnknownMeteringMode - Unknown Metering Mode
-var UnknownMeteringMode = MeteringMode(0)
 
 // MeteringModeValues -
 // Derived from https://sno.phy.queensu.ca/~phil/exiftool/TagNames/EXIF.html (23/09/2019)
@@ -85,7 +86,7 @@ func NewShutterSpeed(num, denom int64) ShutterSpeed {
 	return ShutterSpeed{denom, num}
 }
 
-// String -
+// String - return a ShutterSpeed as a string
 func (ss ShutterSpeed) String() string {
 	if ss[0] == 0 {
 		return strconv.Itoa(int(ss[1]))
@@ -104,11 +105,12 @@ func NewOrientation(i int) Orientation {
 	return Orientation(i)
 }
 
+// String - Return an Orientation as a string
 func (o Orientation) String() string {
 	return OrientationValues[o]
 }
 
-// OrientationValues -
+// OrientationValues - Image orientation values
 var OrientationValues = map[Orientation]string{
 	1: "Horizontal (normal)",
 	2: "Mirror horizontal",

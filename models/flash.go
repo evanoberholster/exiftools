@@ -18,9 +18,6 @@ func NewFlashMode(m int) FlashMode {
 	return FlashMode{flashBoolValues[mode], mode}
 }
 
-// NoFlashFired - Flash was not fired, false and 0
-var NoFlashFired = FlashMode{false, 0}
-
 // FlashValues -
 // Derived from https://sno.phy.queensu.ca/~phil/exiftool/TagNames/EXIF.html#Flash (23/09/2019)
 var FlashValues = map[uint8]string{
