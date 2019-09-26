@@ -162,6 +162,23 @@ func (x *Exif) GetStrings(fields ...FieldName) (string, error) {
 	return strings.TrimSpace(s), err
 }
 
+// GetUints - Get Unsigned Ints from fieldNames
+func (x *Exif) GetUints(fields ...FieldName) (uint, error) {
+	var err error
+	var ok bool
+	var a *tiff.Tag
+	for _, field := range fields {
+		if a, ok = x.main[field]; ok {
+			break
+		}
+	}
+	if a == nil {
+		return 0, TagNotPresentError(fields[len(fields)-1])
+	}
+	i, err := a.Int(0)
+	return uint(i), err
+}
+
 // GPSAltitude - Convenience function for getting GPSAltitude
 func (x *Exif) GPSAltitude() (float32, error) {
 	alt, err := x.Get(GPSAltitude)

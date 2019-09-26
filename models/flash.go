@@ -3,24 +3,20 @@ package models
 // FlashMode - Mode in which the camera Flash was used.
 // (bool) - true if flash was fired
 // (uint8) - value of FlashMode
-type FlashMode struct {
-	bool
-	uint8
-}
+type FlashMode uint8
 
 func (fm FlashMode) String() string {
-	return FlashValues[fm.uint8]
+	return FlashValues[fm]
 }
 
 // NewFlashMode - Create new Flash Mode
 func NewFlashMode(m int) FlashMode {
-	mode := uint8(m)
-	return FlashMode{flashBoolValues[mode], mode}
+	return FlashMode(m)
 }
 
 // FlashValues -
 // Derived from https://sno.phy.queensu.ca/~phil/exiftool/TagNames/EXIF.html#Flash (23/09/2019)
-var FlashValues = map[uint8]string{
+var FlashValues = map[FlashMode]string{
 	0:  "No Flash",
 	1:  "Fired",
 	5:  "Fired, Return not detected",
@@ -52,7 +48,7 @@ var FlashValues = map[uint8]string{
 
 // flashBoolValues -
 // (bool) - true if the flash was fired
-var flashBoolValues = map[uint8]bool{
+var flashBoolValues = map[FlashMode]bool{
 	0:  false,
 	1:  true,
 	5:  true,

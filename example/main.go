@@ -90,7 +90,15 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.MeteringMode, _ = x.GetMeteringMode()
 	m.Exif.Flash, _ = x.GetFlashMode()
 	// Image Size
-	m.Exif.ImageWidth, m.Exif.ImageHeight = x.GetImageSize()
+	m.Exif.ImageHeight, _ = x.GetUints(exif.ImageLength, exif.PixelYDimension)
+	//if err != nil {
+	//	fmt.Println("Error", err)
+	//}
+	m.Exif.ImageWidth, _ = x.GetUints(exif.ImageWidth, exif.PixelXDimension)
+	//if err != nil {
+	//	fmt.Println("Error", err)
+	//}
+	//m.Exif.ImageWidth, m.Exif.ImageHeight = x.GetImageSize()
 	m.Exif.CameraMake, _ = x.GetString(exif.Make)
 	m.Exif.CameraModel, _ = x.GetString(exif.Model)
 	m.Exif.CameraSerial, _ = x.GetString(exif.SerialNumber)
@@ -106,6 +114,8 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.Aperture, _ = x.GetAperture()
 	m.Exif.ShutterSpeed, _ = x.GetShutterSpeed()
 	m.Exif.ExposureBias, _ = x.GetExposureBias()
+
+	// ModifyTimeStamp
 
 	cr := new(mknote.CanonRaw)
 	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)

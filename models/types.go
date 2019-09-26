@@ -7,7 +7,7 @@ import (
 
 // Unknown variables
 var (
-	NoFlashFired        = FlashMode{false, 0}
+	NoFlashFired        = FlashMode(0)
 	UnkownExposureMode  = ExposureMode(0)
 	UnknownMeteringMode = MeteringMode(0)
 )
