@@ -3,7 +3,6 @@ package xmp
 
 import (
 	"io"
-	"os"
 
 	"github.com/evanoberholster/exif/models"
 	"trimmer.io/go-xmp/models/dc"
@@ -12,12 +11,12 @@ import (
 )
 
 // ReadXMPDocument - Read from file to XMP Document
-func ReadXMPDocument(f *os.File) (*xmp.Document, error) {
-	f.Seek(0, 0)
+func ReadXMPDocument(r io.Reader) (*xmp.Document, error) {
+	//r.Seek(0, 0)
 
 	doc := &xmp.Document{}
 
-	bb, err := xmp.ScanPackets(f)
+	bb, err := xmp.ScanPackets(r)
 	if (err != nil && err != io.EOF) || len(bb) == 0 {
 		return doc, err
 	}

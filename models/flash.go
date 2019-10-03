@@ -5,8 +5,14 @@ package models
 // (uint8) - value of FlashMode
 type FlashMode uint8
 
+// String - Return string for FlashMode
 func (fm FlashMode) String() string {
 	return FlashValues[fm]
+}
+
+// Bool - Return boolean for FlashMode
+func (fm FlashMode) Bool() bool {
+	return flashBoolValues[fm]
 }
 
 // NewFlashMode - Create new Flash Mode

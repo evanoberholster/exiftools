@@ -65,36 +65,36 @@ var meteringModeValues = map[MeteringMode]string{
 	255: "Other",
 }
 
-// ExposureBias - [0] Denominator [1] Numerator
+// ExposureBias - [0] Numerator [1] Denominator
 type ExposureBias [2]int64
 
 // NewExposureBias - Set ExposureBias from Numerator and Denominator
 func NewExposureBias(num, denom int64) ExposureBias {
-	return ExposureBias{denom, num}
+	return ExposureBias{num, denom}
 }
 
 // String - String value of Exposure Bias
 func (eb ExposureBias) String() string {
-	return fmt.Sprintf("%d/%d", eb[1], eb[0])
+	return fmt.Sprintf("%d/%d", eb[0], eb[1])
 }
 
-// ShutterSpeed - [0] Denominator [1] Numerator
+// ShutterSpeed - [0] Numerator [1] Denominator
 type ShutterSpeed [2]int64
 
 // NewShutterSpeed - Set ShutterSpeed from Numerator and Denominator
 func NewShutterSpeed(num, denom int64) ShutterSpeed {
-	return ShutterSpeed{denom, num}
+	return ShutterSpeed{num, denom}
 }
 
 // String - return a ShutterSpeed as a string
 func (ss ShutterSpeed) String() string {
-	if ss[0] == 0 {
-		return strconv.Itoa(int(ss[1]))
-	}
 	if ss[1] == 0 {
+		return strconv.Itoa(int(ss[0]))
+	}
+	if ss[0] == 0 {
 		return "Unknown"
 	}
-	return fmt.Sprintf("%d/%d", ss[1], ss[0])
+	return fmt.Sprintf("%d/%d", ss[0], ss[1])
 }
 
 // Orientation - Orientation of Image from exif

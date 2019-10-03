@@ -110,6 +110,12 @@ const (
 	ThumbJPEGInterchangeFormatLength FieldName = "ThumbJPEGInterchangeFormatLength" // byte length of thumb
 )
 
+// preview Image fields
+const (
+	PreviewImageStart  FieldName = "PreviewImageStart"
+	PreviewImageLength FieldName = "PreviewImageLength"
+)
+
 // GPS fields
 const (
 	GPSVersionID        FieldName = "GPSVersionID"
@@ -313,4 +319,9 @@ var interopFields = map[uint16]FieldName{
 var thumbnailFields = map[uint16]FieldName{
 	0x0201: ThumbJPEGInterchangeFormat,
 	0x0202: ThumbJPEGInterchangeFormatLength,
+}
+
+var previewImageFields = map[uint16]FieldName{
+	0x0111: PreviewImageStart,
+	0x0117: PreviewImageLength,
 }
