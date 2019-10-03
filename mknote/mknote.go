@@ -3,6 +3,7 @@ package mknote
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/evanoberholster/exif/exif"
 	"github.com/evanoberholster/exif/tiff"
@@ -65,10 +66,47 @@ func (_ *nikonV3) Parse(x *exif.Exif) error {
 
 	// Nikon v3 maker note is a self-contained IFD (offsets are relative
 	// to the start of the maker note)
-	mkNotes, err := tiff.Decode(bytes.NewReader(m.Val[10:]))
+	nReader := bytes.NewReader(m.Val[10:])
+	mkNotes, err := tiff.Decode(nReader)
 	if err != nil {
 		return err
 	}
+	makerNoteOffset := m.ValOffset + 10
 	x.LoadTags(mkNotes.Dirs[0], makerNoteNikon3Fields, false)
+
+	if err := loadSubDir(x, nReader, NikonPreviewPtr, makerNoteNikon3PreviewFields); err != nil {
+	}
+	previewTag, err := x.Get(NikonPreviewImageStart)
+	if err == nil {
+		offset, _ := previewTag.Int64(0)
+		previewTag.SetInt(0, offset+int64(makerNoteOffset))
+		x.Update(NikonPreviewImageStart, previewTag)
+	}
+	fmt.Println("OFFSET.......", m.ValOffset+10)
+	fmt.Println(err)
+
+	return nil
+}
+
+func loadSubDir(x *exif.Exif, r *bytes.Reader, ptr exif.FieldName, fieldMap map[uint16]exif.FieldName) error {
+	tag, err := x.Get(ptr)
+	if err != nil {
+		return nil
+	}
+	fmt.Println(tag)
+	offset, err := tag.Int64(0)
+	if err != nil {
+		return nil
+	}
+
+	_, err = r.Seek(offset, 0)
+	if err != nil {
+		return fmt.Errorf("exif: seek to sub-IFD %s failed: %v", ptr, err)
+	}
+	subDir, _, err := tiff.DecodeDir(r, x.Tiff.Order)
+	if err != nil {
+		return fmt.Errorf("exif: sub-IFD %s decode failed: %v", ptr, err)
+	}
+	x.LoadTags(subDir, fieldMap, false)
 	return nil
 }

@@ -173,7 +173,6 @@ func (p *parser) Parse(x *Exif) error {
 	if err := loadSubDir(x, GPSInfoIFDPointer, gpsFields); err != nil {
 		te[loadGPS] = err.Error()
 	}
-
 	if err := loadSubDir(x, InteroperabilityIFDPointer, interopFields); err != nil {
 		te[loadInteroperability] = err.Error()
 	}
@@ -352,6 +351,15 @@ func (x *Exif) Get(name FieldName) (*tiff.Tag, error) {
 		return tg, nil
 	}
 	return nil, TagNotPresentError(name)
+}
+
+// Update -- Illegal
+func (x *Exif) Update(name FieldName, tag *tiff.Tag) error {
+	if _, ok := x.main[name]; ok {
+		x.main[name] = tag
+		return nil
+	}
+	return TagNotPresentError(name)
 }
 
 // Walker is the interface used to traverse all fields of an Exif object.
@@ -590,29 +598,6 @@ func (x *Exif) JpegThumbnail() (int64, int64, error) {
 
 	return int64(start), int64(l), nil
 	//return 0, x.Raw[start : start+l], nil
-}
-
-// PreviewImage returns the byte start location and length of the preview Image.
-func (x *Exif) PreviewImage() (int64, int64, error) {
-	offset, err := x.Get(PreviewImageStart)
-	if err != nil {
-		return 0, 0, err
-	}
-	start, err := offset.Int(0)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	length, err := x.Get(PreviewImageLength)
-	if err != nil {
-		return 0, 0, err
-	}
-	l, err := length.Int(0)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return int64(start), int64(l), nil
 }
 
 // MarshalJSON implements the encoding/json.Marshaler interface providing output of

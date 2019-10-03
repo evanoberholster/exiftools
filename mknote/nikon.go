@@ -2,6 +2,9 @@ package mknote
 
 import "github.com/evanoberholster/exif/exif"
 
+// Nikon-specific Maker Note Sub-Ifd pointers
+var ()
+
 // Nikon-specific Maker Note fields
 var (
 	NikonVersion        exif.FieldName = "Nikon.Version"
@@ -23,6 +26,7 @@ var (
 	NikonAFInfo2        exif.FieldName = "Nikon.AFInfo2"        // A sub-IFD
 	NikonFileInfo       exif.FieldName = "Nikon.FileInfo"       // A sub-IFD
 	NikonAFTune         exif.FieldName = "Nikon.AFTune"         // A sub-IFD
+	NikonPreviewPtr     exif.FieldName = "Nikon.PreviewSubIFD"  // A sub-IFD
 	Nikon3_0x000a       exif.FieldName = "Nikon3.0x000a"
 	Nikon3_0x009b       exif.FieldName = "Nikon3.0x009b"
 	Nikon3_0x009f       exif.FieldName = "Nikon3.0x009f"
@@ -47,7 +51,7 @@ var makerNoteNikon3Fields = map[uint16]exif.FieldName{
 	0x000e: ExposureDiff,
 	0x000f: ISOSelection,
 	0x0010: DataDump,
-	0x0011: Preview,
+	0x0011: NikonPreviewPtr,
 	0x0012: FlashComp,
 	0x0013: ISOSettings,
 	0x0016: ImageBoundary,
@@ -123,6 +127,19 @@ var makerNoteNikon3Fields = map[uint16]exif.FieldName{
 	0x0e1e: CaptureOutput,
 }
 
+// Nikon NikonPreviewPtr Sub-IFD fields
+const (
+	NikonPreviewSubfileType exif.FieldName = "Nikon.Preview.SubfileType"
+	NikonPreviewImageStart  exif.FieldName = "Nikon.Preview.ImageStart"
+	NikonPreviewImageLength exif.FieldName = "Nikon.Preview.ImageLength"
+)
+
+var makerNoteNikon3PreviewFields = map[uint16]exif.FieldName{
+	0x00fe: NikonPreviewSubfileType,
+	0x0201: NikonPreviewImageStart,
+	0x0202: NikonPreviewImageLength,
+}
+
 // NikonRaw - Raw Image from a Canon Camera
 type NikonRaw struct{}
 
@@ -130,3 +147,6 @@ type NikonRaw struct{}
 func (nr *NikonRaw) RawCameraSettings(x *exif.Exif) (CameraSettings, error) {
 	return CameraSettings{}, nil
 }
+
+// NikonPreviewImageTag is the Preview Image Tag for NEF raw files
+var NikonPreviewImageTag = exif.NewPreviewImageTag(NikonPreviewImageStart, NikonPreviewImageLength)

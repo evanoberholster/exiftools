@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -17,7 +19,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/2.CR2" //.jpg"
+	fname := "../../test/img/1.NEF" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -117,12 +119,23 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 
 	// ModifyTimeStamp
 
-	fmt.Println(x.PreviewImage())
 	fmt.Println(x.JpegThumbnail())
+	//mknote.NikonPreviewImageTag
+	s, l, err := x.PreviewImage(mknote.NikonPreviewImageTag)
+	nr := io.NewSectionReader(f, s, l)
+
+	b, err := ioutil.ReadAll(nr)
+	fw, err := os.Create("test.jpg")
+	defer fw.Close()
+	n, err := fw.Write(b)
+	fmt.Println("Bytes Written:", n)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	cr := new(mknote.CanonRaw)
 	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)
-
+	fmt.Println(x)
 	return nil
 }
 

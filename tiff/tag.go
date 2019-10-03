@@ -394,6 +394,21 @@ func (t *Tag) Int(i int) (r int, err error) {
 	return int(t.intVals[i]), nil
 }
 
+// SetInt sets the tag's i'th value as an integer (val). It returns an error if the
+// tag's Format is not IntVal. It panics if i is out of range
+func (t *Tag) SetInt(i int, val int64) (err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = errors.New("index out of range in Int")
+		}
+	}()
+	if t.format != IntVal {
+		return t.typeErr(IntVal)
+	}
+	t.intVals[i] = val
+	return nil
+}
+
 // Float returns the tag's i'th value as a float. It returns an error if the
 // tag's Format is not IntVal.  It panics if i is out of range.
 func (t *Tag) Float(i int) (float64, error) {
