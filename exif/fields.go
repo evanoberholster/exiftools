@@ -176,6 +176,10 @@ var exifFields = map[uint16]FieldName{
 	0x011B: YResolution,
 	0x0128: ResolutionUnit,
 
+	// Preview tags
+	0x0111: PreviewImageStart,
+	0x0117: PreviewImageLength,
+
 	// Other tags
 	0x0132: DateTime,
 	0x010E: ImageDescription,

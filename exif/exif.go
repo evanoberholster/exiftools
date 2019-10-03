@@ -569,26 +569,50 @@ func (x *Exif) String() string {
 
 // JpegThumbnail returns the jpeg thumbnail if it exists. If it doesn't exist,
 // TagNotPresentError will be returned
-func (x *Exif) JpegThumbnail() ([]byte, error) {
+func (x *Exif) JpegThumbnail() (int64, int64, error) {
 	offset, err := x.Get(ThumbJPEGInterchangeFormat)
 	if err != nil {
-		return nil, err
+		return 0, 0, err
 	}
 	start, err := offset.Int(0)
 	if err != nil {
-		return nil, err
+		return 0, 0, err
 	}
 
 	length, err := x.Get(ThumbJPEGInterchangeFormatLength)
 	if err != nil {
-		return nil, err
+		return 0, 0, err
 	}
 	l, err := length.Int(0)
 	if err != nil {
-		return nil, err
+		return 0, 0, err
 	}
 
-	return x.Raw[start : start+l], nil
+	return int64(start), int64(l), nil
+	//return 0, x.Raw[start : start+l], nil
+}
+
+// PreviewImage returns the byte start location and length of the preview Image.
+func (x *Exif) PreviewImage() (int64, int64, error) {
+	offset, err := x.Get(PreviewImageStart)
+	if err != nil {
+		return 0, 0, err
+	}
+	start, err := offset.Int(0)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	length, err := x.Get(PreviewImageLength)
+	if err != nil {
+		return 0, 0, err
+	}
+	l, err := length.Int(0)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return int64(start), int64(l), nil
 }
 
 // MarshalJSON implements the encoding/json.Marshaler interface providing output of
