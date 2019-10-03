@@ -95,3 +95,95 @@ var CanonCameraSettingsFields = map[int]CameraSettingsField{
 	CanonExposureMode:    models.CanonExposureModeValues,
 	CanonAESetting:       models.CanonAESettingValues,
 }
+
+var CanonMakerNoteTimeZones = map[int]string{
+	0:     "+00:00",
+	1:     "+12:45",
+	2:     "+12:00",
+	3:     "+11:00",
+	4:     "+10:00",
+	5:     "+9:30",
+	6:     "+9:00",
+	7:     "+8:00",
+	8:     "+7:00",
+	9:     "+6:30",
+	10:    "+6:00",
+	11:    "+5:45",
+	12:    "+5:30",
+	13:    "+5:00",
+	14:    "+4:30",
+	15:    "+4:00",
+	16:    "+3:30",
+	17:    "+3:00",
+	18:    "+2:00",
+	19:    "+1:00",
+	20:    "+0:00",
+	21:    "-1:00",
+	22:    "-2:00",
+	23:    "-3:00",
+	24:    "-3:30",
+	25:    "-4:00",
+	26:    "-4:00",
+	27:    "-5:00",
+	28:    "-6:00",
+	29:    "-7:00",
+	30:    "-8:00",
+	31:    "-9:00",
+	32:    "-10:00",
+	33:    "-11:00",
+	32766: "+00:00",
+}
+
+// CanonMakerNoteTimeZoneValues
+var CanonMakerNoteTimeZoneValues = map[int]string{
+	0:     "n/a",
+	1:     "Chatham Islands",
+	2:     "Wellington",
+	3:     "Solomon Islands",
+	4:     "Sydney",
+	5:     "Adelaide",
+	6:     "Tokyo",
+	7:     "Hong Kong",
+	8:     "Bangkok",
+	9:     "Yangon",
+	10:    "Dhaka",
+	11:    "Kathmandu",
+	12:    "Delhi",
+	13:    "Karachi",
+	14:    "Kabul",
+	15:    "Dubai",
+	16:    "Tehran",
+	17:    "Moscow",
+	18:    "Cairo",
+	19:    "Paris",
+	20:    "London",
+	21:    "Azores",
+	22:    "Fernando de Noronha",
+	23:    "Sao Paulo",
+	24:    "Newfoundland",
+	25:    "Santiago",
+	26:    "Caracas",
+	27:    "New York",
+	28:    "Chicago",
+	29:    "Denver",
+	30:    "Los Angeles",
+	31:    "Anchorage",
+	32:    "Honolulu",
+	33:    "Samoa",
+	32766: "(not set)",
+}
+
+// CanonTimeZone -
+func CanonTimeZone(x *exif.Exif) string {
+	ti, err := x.Get(CanonTimeInfo)
+	if err != nil {
+		return CanonMakerNoteTimeZones[0]
+	}
+
+	timeZone, err := ti.Int(2)
+	if err != nil {
+		return CanonMakerNoteTimeZones[0]
+	}
+
+	return CanonMakerNoteTimeZones[timeZone]
+}

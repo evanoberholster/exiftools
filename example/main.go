@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/1.NEF" //.jpg"
+	fname := "../../test/img/12.jpg" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -84,7 +84,10 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 
 	m.Exif.GPSLatitude, m.Exif.GPSLongitude, _ = x.LatLong()
 
-	m.Exif.DateTimeOriginal, _ = x.DateTime()
+	m.Exif.DateTimeOriginal, err = x.DateTime()
+	if err != nil {
+		panic(err)
+	}
 	m.Exif.FocalLength, _ = x.FocalLength(exif.FocalLength)
 
 	m.Exif.FocalLengthEqv, _ = x.FocalLength(exif.FocalLengthIn35mmFilm)
@@ -132,10 +135,11 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	if err != nil {
 		fmt.Println(err)
 	}
-
+	fmt.Println(x)
 	cr := new(mknote.CanonRaw)
 	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)
-	fmt.Println(x)
+	fmt.Println(mknote.CanonTimeZone(x))
+
 	return nil
 }
 

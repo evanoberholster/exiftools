@@ -389,20 +389,37 @@ func (x *Exif) Walk(w Walker) error {
 //
 // If the EXIF lacks timezone information or GPS time, the returned
 // time's Location will be time.Local.
-func (x *Exif) DateTime() (time.Time, error) {
+func (x *Exif) DateTime(fields ...FieldName) (time.Time, error) {
 	var dt time.Time
-	tag, err := x.Get(DateTimeOriginal)
-	if err != nil {
-		tag, err = x.Get(DateTime)
-		if err != nil {
-			return dt, err
+	var tag *tiff.Tag
+	var err error
+	if len(fields) == 0 {
+		fields = append(fields, DateTimeOriginal, DateTime)
+	}
+	for _, f := range fields {
+		tag, err = x.Get(f)
+		if err == nil {
+			break
 		}
 	}
 	if tag.Format() != tiff.StringVal {
 		return dt, errors.New("DateTime[Original] not in string format")
 	}
+
 	exifTimeLayout := "2006:01:02 15:04:05"
 	dateStr := strings.TrimRight(string(tag.Val), "\x00")
+
+	subSecTag, err := x.Get(SubSecTimeOriginal)
+	if err == nil {
+		subSec, err := subSecTag.StringVal()
+		if err != nil {
+			fmt.Println("    HELLO WORLD")
+		}
+		exifTimeLayout = "2006:01:02 15:04:05.99"
+		dateStr = fmt.Sprintf("%v.%v", dateStr, subSec)
+		fmt.Println(dateStr)
+	}
+
 	// TODO(bradfitz,mpl): look for timezone offset, GPS time, etc.
 	timeZone := time.Local
 	if tz, _ := x.TimeZone(); tz != nil {

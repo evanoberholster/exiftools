@@ -38,14 +38,16 @@ func (_ *canon) Parse(x *exif.Exif) error {
 
 	// Canon notes are a single IFD directory with no header.
 	// Reader offsets need to be w.r.t. the original tiff structure.
-	buf := bytes.NewReader(append(make([]byte, m.ValOffset), m.Val...))
-	buf.Seek(int64(m.ValOffset), 0)
+	cReader := bytes.NewReader(append(make([]byte, m.ValOffset), m.Val...))
+	cReader.Seek(int64(m.ValOffset), 0)
 
-	mkNotesDir, _, err := tiff.DecodeDir(buf, x.Tiff.Order)
+	mkNotesDir, _, err := tiff.DecodeDir(cReader, x.Tiff.Order)
 	if err != nil {
 		return err
 	}
 	x.LoadTags(mkNotesDir, makerNoteCanonFields, false)
+	if err := loadSubDir(x, cReader, CanonCameraSettings, makerNoteNikon3PreviewFields); err != nil {
+	}
 	return nil
 }
 
@@ -74,8 +76,8 @@ func (_ *nikonV3) Parse(x *exif.Exif) error {
 	makerNoteOffset := m.ValOffset + 10
 	x.LoadTags(mkNotes.Dirs[0], makerNoteNikon3Fields, false)
 
-	if err := loadSubDir(x, nReader, NikonPreviewPtr, makerNoteNikon3PreviewFields); err != nil {
-	}
+	//if err := loadSubList(x, nReader, NikonPreviewPtr, makerNoteNikon3PreviewFields); err != nil {
+	//}
 	previewTag, err := x.Get(NikonPreviewImageStart)
 	if err == nil {
 		offset, _ := previewTag.Int64(0)
@@ -110,3 +112,7 @@ func loadSubDir(x *exif.Exif, r *bytes.Reader, ptr exif.FieldName, fieldMap map[
 	x.LoadTags(subDir, fieldMap, false)
 	return nil
 }
+
+//func loadSubList(x *exif.Exif, r *bytes.Reader, ptr exif.FieldName, fieldMap map[uint16]exif.FieldName) error {
+//	return nil
+//}
