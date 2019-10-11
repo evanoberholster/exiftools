@@ -28,12 +28,13 @@ func NewPreviewImageTag(start FieldName, length FieldName, compression FieldName
 }
 
 // PreviewImage returns the byte start location and length of the preview Image.
-func (x Exif) PreviewImage(tags ...PreviewImageTag) (int64, int64, error) {
+func (x Exif) PreviewImage(tags ...PreviewImageTag) (start int64, length int64, err error) {
 	tags = append(tags,
 		NewPreviewImageTag(PreviewImageStart, PreviewImageLength, FieldName("None")),                        // IFD0 PreviewImage
 		NewPreviewImageTag(ThumbJPEGInterchangeFormat, ThumbJPEGInterchangeFormatLength, FieldName("None")), // IFD0 ThumbnailImage
 	)
 	for i, tag := range tags {
+		// If Preview Image is of type JPEG, PNG, WEBP else continue
 		if tag.Compression != FieldName("None") {
 			compression, err := x.Get(tag.Compression)
 			if err == nil {
