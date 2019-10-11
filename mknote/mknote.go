@@ -14,9 +14,47 @@ var (
 	Canon = &canon{}
 	// NikonV3 is an exif.Parser for nikon makernote data.
 	NikonV3 = &nikonV3{}
+	// AdobeDNG is an exif.Parse for DNG subIfds.
+	AdobeDNG = &adobeDNG{}
 	// All is a list of all available makernote parsers
-	All = []exif.Parser{Canon, NikonV3}
+	All = []exif.Parser{Canon, NikonV3, AdobeDNG}
 )
+
+type adobeDNG struct{}
+
+// Parse decodes all Adobe DNG subIFDS found in x and adds it to x.
+func (_ *adobeDNG) Parse(x *exif.Exif) error {
+	m, err := x.Get(exif.SubIfdsPointer)
+	if err != nil {
+		return nil
+	}
+	if !(m.Count > 0) {
+		return nil
+	}
+	subIfds := []map[uint16]exif.FieldName{
+		SubIFD0Fields,
+		SubIFD1Fields,
+		SubIFD2Fields,
+	}
+	r := bytes.NewReader(x.Raw)
+	for i, sub := range subIfds {
+		offset, err := m.Int64(i)
+		if err != nil {
+			return nil
+		}
+		_, err = r.Seek(offset, 0)
+		if err != nil {
+			return fmt.Errorf("exif: seek to sub-IFD %s failed: %v", exif.SubIfdsPointer, err)
+		}
+		subDir, _, err := tiff.DecodeDir(r, x.Tiff.Order)
+		if err != nil {
+			return fmt.Errorf("exif: sub-IFD %s decode failed: %v", exif.SubIfdsPointer, err)
+		}
+		x.LoadTags(subDir, sub, false)
+	}
+
+	return nil
+}
 
 type canon struct{}
 
@@ -46,8 +84,8 @@ func (_ *canon) Parse(x *exif.Exif) error {
 		return err
 	}
 	x.LoadTags(mkNotesDir, makerNoteCanonFields, false)
-	if err := loadSubDir(x, cReader, CanonCameraSettings, makerNoteNikon3PreviewFields); err != nil {
-	}
+	//	if err := loadSubDir(x, cReader, CanonCameraSettings, makerNoteNikon3PreviewFields); err != nil {
+	//	}
 	return nil
 }
 
@@ -76,16 +114,14 @@ func (_ *nikonV3) Parse(x *exif.Exif) error {
 	makerNoteOffset := m.ValOffset + 10
 	x.LoadTags(mkNotes.Dirs[0], makerNoteNikon3Fields, false)
 
-	//if err := loadSubList(x, nReader, NikonPreviewPtr, makerNoteNikon3PreviewFields); err != nil {
-	//}
+	if err := loadSubDir(x, nReader, NikonPreviewPtr, makerNoteNikon3PreviewFields); err != nil {
+	}
 	previewTag, err := x.Get(NikonPreviewImageStart)
 	if err == nil {
 		offset, _ := previewTag.Int64(0)
 		previewTag.SetInt(0, offset+int64(makerNoteOffset))
 		x.Update(NikonPreviewImageStart, previewTag)
 	}
-	fmt.Println("OFFSET.......", m.ValOffset+10)
-	fmt.Println(err)
 
 	return nil
 }
@@ -95,7 +131,6 @@ func loadSubDir(x *exif.Exif, r *bytes.Reader, ptr exif.FieldName, fieldMap map[
 	if err != nil {
 		return nil
 	}
-	fmt.Println(tag)
 	offset, err := tag.Int64(0)
 	if err != nil {
 		return nil
@@ -112,7 +147,3 @@ func loadSubDir(x *exif.Exif, r *bytes.Reader, ptr exif.FieldName, fieldMap map[
 	x.LoadTags(subDir, fieldMap, false)
 	return nil
 }
-
-//func loadSubList(x *exif.Exif, r *bytes.Reader, ptr exif.FieldName, fieldMap map[uint16]exif.FieldName) error {
-//	return nil
-//}

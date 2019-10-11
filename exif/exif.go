@@ -413,11 +413,10 @@ func (x *Exif) DateTime(fields ...FieldName) (time.Time, error) {
 	if err == nil {
 		subSec, err := subSecTag.StringVal()
 		if err != nil {
-			fmt.Println("    HELLO WORLD")
 		}
 		exifTimeLayout = "2006:01:02 15:04:05.99"
 		dateStr = fmt.Sprintf("%v.%v", dateStr, subSec)
-		fmt.Println(dateStr)
+		//fmt.Println(dateStr)
 	}
 
 	// TODO(bradfitz,mpl): look for timezone offset, GPS time, etc.

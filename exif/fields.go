@@ -31,6 +31,7 @@ const (
 	Copyright                  FieldName = "Copyright"
 	ExifIFDPointer             FieldName = "ExifIFDPointer"
 	GPSInfoIFDPointer          FieldName = "GPSInfoIFDPointer"
+	SubIfdsPointer             FieldName = "SubIfdsPointer"
 	InteroperabilityIFDPointer FieldName = "InteroperabilityIFDPointer"
 	ExifVersion                FieldName = "ExifVersion"
 	FlashpixVersion            FieldName = "FlashpixVersion"
@@ -156,6 +157,9 @@ const (
 	InteroperabilityIndex FieldName = "InteroperabilityIndex"
 )
 
+// SubIfds Pointer
+const subIfdsPointer = 0x014A
+
 var exifFields = map[uint16]FieldName{
 	/////////////////////////////////////
 	////////// IFD 0 ////////////////////
@@ -207,6 +211,7 @@ var exifFields = map[uint16]FieldName{
 
 	gpsPointer:     GPSInfoIFDPointer,
 	interopPointer: InteroperabilityIFDPointer,
+	subIfdsPointer: SubIfdsPointer,
 
 	0x9000: ExifVersion,
 	0xA000: FlashpixVersion,

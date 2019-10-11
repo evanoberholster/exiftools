@@ -132,10 +132,12 @@ const (
 	NikonPreviewSubfileType exif.FieldName = "Nikon.Preview.SubfileType"
 	NikonPreviewImageStart  exif.FieldName = "Nikon.Preview.ImageStart"
 	NikonPreviewImageLength exif.FieldName = "Nikon.Preview.ImageLength"
+	NikonPreviewCompression exif.FieldName = "Nikon.Preview.Compression"
 )
 
 var makerNoteNikon3PreviewFields = map[uint16]exif.FieldName{
 	0x00fe: NikonPreviewSubfileType,
+	0x0103: NikonPreviewCompression,
 	0x0201: NikonPreviewImageStart,
 	0x0202: NikonPreviewImageLength,
 }
@@ -149,4 +151,4 @@ func (nr *NikonRaw) RawCameraSettings(x *exif.Exif) (CameraSettings, error) {
 }
 
 // NikonPreviewImageTag is the Preview Image Tag for NEF raw files
-var NikonPreviewImageTag = exif.NewPreviewImageTag(NikonPreviewImageStart, NikonPreviewImageLength)
+var NikonPreviewImageTag = exif.NewPreviewImageTag(NikonPreviewImageStart, NikonPreviewImageLength, NikonPreviewCompression)
