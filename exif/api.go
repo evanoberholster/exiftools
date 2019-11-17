@@ -264,6 +264,9 @@ func (x *Exif) FocalLength(fn FieldName) (fl float32, err error) {
 		if err != nil {
 			return 0, err
 		}
+		if denom == 0 {
+			return float32(num), nil
+		}
 		return float32(num) / float32(denom), nil
 
 	case tiff.DTShort:

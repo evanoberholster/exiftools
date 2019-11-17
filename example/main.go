@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/1.CR2" //.jpg"
+	fname := "../../test/img/c.JPG" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -136,6 +136,7 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	}
 	a, _ := json.Marshal(x)
 	colorJSON(a)
+	fmt.Println(x.DateTime())
 	//fmt.Println(x)
 	cr := new(mknote.CanonRaw)
 	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)

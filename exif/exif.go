@@ -408,23 +408,26 @@ func (x *Exif) DateTime(fields ...FieldName) (time.Time, error) {
 
 	exifTimeLayout := "2006:01:02 15:04:05"
 	dateStr := strings.TrimRight(string(tag.Val), "\x00")
-
 	subSecTag, err := x.Get(SubSecTimeOriginal)
 	if err == nil {
 		subSec, err := subSecTag.StringVal()
-		if err != nil {
+		if err == nil {
+			if len(subSec) == 2 {
+				exifTimeLayout = "2006:01:02 15:04:05.99"
+			} else if len(subSec) == 3 {
+				exifTimeLayout = "2006:01:02 15:04:05.999"
+			}
+			dateStr = fmt.Sprintf("%v.%v", dateStr, subSec)
 		}
-		exifTimeLayout = "2006:01:02 15:04:05.99"
-		dateStr = fmt.Sprintf("%v.%v", dateStr, subSec)
-		//fmt.Println(dateStr)
 	}
 
 	// TODO(bradfitz,mpl): look for timezone offset, GPS time, etc.
-	timeZone := time.Local
-	if tz, _ := x.TimeZone(); tz != nil {
-		timeZone = tz
-	}
-	return time.ParseInLocation(exifTimeLayout, dateStr, timeZone)
+	//timeZone := time.Local
+	//if tz, _ := x.TimeZone(); tz != nil {
+	//	timeZone = tz
+	//}
+	return time.Parse(exifTimeLayout, dateStr)
+	//return time.ParseInLocation(exifTimeLayout, dateStr, timeZone)
 }
 
 // TimeZone -
