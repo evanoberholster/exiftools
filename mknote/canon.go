@@ -1,8 +1,8 @@
 package mknote
 
 import (
-	"github.com/evanoberholster/exif/exif"
-	"github.com/evanoberholster/exif/models"
+	"github.com/evanoberholster/exiftools/exif"
+	"github.com/evanoberholster/exiftools/models"
 )
 
 // Canon-specific fields

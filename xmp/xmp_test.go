@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/evanoberholster/exif/models"
-	"github.com/evanoberholster/exif/xmp"
+	"github.com/evanoberholster/exiftools/models"
+	"github.com/evanoberholster/exiftools/xmp"
 )
 
 const JPEGTestFile = "../exif/samples/test.jpg"

@@ -4,7 +4,7 @@ package xmp
 import (
 	"io"
 
-	"github.com/evanoberholster/exif/models"
+	"github.com/evanoberholster/exiftools/models"
 	"trimmer.io/go-xmp/models/dc"
 	xmpbase "trimmer.io/go-xmp/models/xmp_base"
 	"trimmer.io/go-xmp/xmp"

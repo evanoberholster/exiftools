@@ -1,3 +1,3 @@
-module github.com/evanoberholster/exif/exif
+module exiftools/exif
 
 go 1.13

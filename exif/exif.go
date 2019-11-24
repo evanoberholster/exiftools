@@ -16,7 +16,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/evanoberholster/exif/tiff"
+	"github.com/evanoberholster/exiftools/tiff"
 )
 
 // ExifLengthCutoff limits the exif size to avoid trying to read corrupted lengths and parsing potentially gigabytes of exif

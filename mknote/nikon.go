@@ -1,6 +1,6 @@
 package mknote
 
-import "github.com/evanoberholster/exif/exif"
+import "github.com/evanoberholster/exiftools/exif"
 
 // Nikon-specific Maker Note Sub-Ifd pointers
 var ()

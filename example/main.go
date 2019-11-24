@@ -12,9 +12,9 @@ import (
 
 	"github.com/TylerBrock/colorjson"
 
-	"github.com/evanoberholster/exif/exif"
-	"github.com/evanoberholster/exif/mknote"
-	"github.com/evanoberholster/exif/xmp"
+	"github.com/evanoberholster/exiftools/exif"
+	"github.com/evanoberholster/exiftools/mknote"
+	"github.com/evanoberholster/exiftools/xmp"
 	"github.com/evanoberholster/filetype"
 )
 

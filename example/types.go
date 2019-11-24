@@ -3,8 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/evanoberholster/exif/mknote"
-	"github.com/evanoberholster/exif/models"
+	"github.com/evanoberholster/exiftools/mknote"
+	"github.com/evanoberholster/exiftools/models"
 )
 
 // Metadata -

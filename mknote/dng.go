@@ -1,7 +1,7 @@
 package mknote
 
 import (
-	"github.com/evanoberholster/exif/exif"
+	"github.com/evanoberholster/exiftools/exif"
 )
 
 // PreviewImageTags
