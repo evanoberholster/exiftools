@@ -73,9 +73,9 @@ Copyright (c) 2012, Robert Carlsen & Contributors
 
 [License-Url]: https://opensource.org/licenses/BSD-2-Clause
 [License-Image]: https://img.shields.io/badge/license-2%20Clause%20BSD-blue.svg?maxAge=2592000
-[Godoc-Url]: https://godoc.org/github.com/evanoberholster/exif
-[Godoc-Image]: https://godoc.org/github.com/evanoberholster/exif?status.svg
-[ReportCard-Url]: https://goreportcard.com/report/github.com/evanoberholster/exif
-[ReportCard-Image]: https://goreportcard.com/badge/github.com/evanoberholster/exif
-[Build-Status-Url]: https://travis-ci.com/evanoberholster/exif?branch=master
-[Build-Status-Image]: https://travis-ci.com/evanoberholster/exif.svg?branch=master
+[Godoc-Url]: https://godoc.org/github.com/evanoberholster/exiftools
+[Godoc-Image]: https://godoc.org/github.com/evanoberholster/exiftools?status.svg
+[ReportCard-Url]: https://goreportcard.com/report/github.com/evanoberholster/exiftools
+[ReportCard-Image]: https://goreportcard.com/badge/github.com/evanoberholster/exiftools
+[Build-Status-Url]: https://travis-ci.com/evanoberholster/exiftools?branch=master
+[Build-Status-Image]: https://travis-ci.com/evanoberholster/exiftools.svg?branch=master
