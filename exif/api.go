@@ -2,7 +2,6 @@ package exif
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -21,7 +20,6 @@ func (x *Exif) GetImageSize() (uint, uint) {
 	if err != nil {
 		w, err = x.Get(PixelXDimension)
 		if err != nil {
-			log.Println(err)
 			return 0, 0
 		}
 		l, _ = x.Get(PixelYDimension)
@@ -77,6 +75,9 @@ func (x *Exif) GetAperture() (float32, error) {
 		return 0.0, err
 	}
 	num, denom, err := a.Rat2(0)
+	if err != nil {
+		return 0.0, err
+	}
 	return float32(num) / float32(denom), err
 }
 
@@ -87,7 +88,11 @@ func (x *Exif) GetISOSpeed() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return a.Int(0)
+	i, err := a.Int(0)
+	if err != nil {
+		return 0.0, err
+	}
+	return i, err
 }
 
 // GetShutterSpeed - Get ShutterSpeed from ExposureTime Tag
@@ -97,6 +102,9 @@ func (x *Exif) GetShutterSpeed() (models.ShutterSpeed, error) {
 		return models.NewShutterSpeed(0, 0), err
 	}
 	nom, denom, err := a.Rat2(0)
+	if err != nil {
+		return models.NewShutterSpeed(0, 0), err
+	}
 	return models.NewShutterSpeed(nom, denom), err
 }
 

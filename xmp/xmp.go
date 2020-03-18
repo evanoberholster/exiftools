@@ -12,17 +12,18 @@ import (
 
 // ReadXMPDocument - Read from file to XMP Document
 func ReadXMPDocument(r io.Reader) (*xmp.Document, error) {
-	//r.Seek(0, 0)
-
-	doc := &xmp.Document{}
-
+	// ScanPackets for XMP
 	bb, err := xmp.ScanPackets(r)
 	if (err != nil && err != io.EOF) || len(bb) == 0 {
-		return doc, err
+		return nil, err
 	}
 
+	// Initialize new XMP Document
+	doc := &xmp.Document{}
+
+	// Unmarshal XMP
 	if err := xmp.Unmarshal(bb[0], doc); err != nil {
-		return doc, err
+		return nil, err
 	}
 
 	return doc, nil
@@ -37,43 +38,45 @@ func Unmarshal(bb []byte) (*xmp.Document, error) {
 
 // Base - Extract XmpBase from XMP Document
 func Base(m *xmp.Document) models.XmpBase {
-	var b models.XmpBase
 	c := xmpbase.FindModel(m)
 	if c == nil {
 		return models.XmpBase{}
 	}
 
-	b.CreateDate = c.CreateDate.Value()
-	b.MetadataDate = c.MetadataDate.Value()
-	b.ModifyDate = c.ModifyDate.Value()
-	b.Label = string(c.Label)
-	b.Rating = int(c.Rating)
-	b.CreatorTool = c.CreatorTool.String()
-
-	return b
+	return models.XmpBase{
+		CreateDate:   c.CreateDate.Value(),
+		MetadataDate: c.MetadataDate.Value(),
+		ModifyDate:   c.ModifyDate.Value(),
+		Label:        string(c.Label),
+		Rating:       int(c.Rating),
+		CreatorTool:  c.CreatorTool.String(),
+	}
 }
 
 // DublinCore - Extract DublinCore from XMP Document
 func DublinCore(m *xmp.Document) models.DublinCore {
-	var d models.DublinCore
 	c := dc.FindModel(m)
 	if c == nil {
-		return d
+		return models.DublinCore{}
 	}
 
 	creator := []string(c.Creator)
-	if len(creator) > 0 {
-		d.Creator = creator[0]
+	if creator == nil {
+		creator = []string{}
 	}
-	s := []string(c.Subject)
-	if s == nil {
-		s = []string{}
-	}
-	d.Subject = s
-	d.Description = c.Description.Default()
-	d.Format = string(c.Format)
-	d.Rights = c.Rights.Default()
-	d.Title = c.Title.Default()
 
-	return d
+	subject := []string(c.Subject)
+	if subject == nil {
+		subject = []string{}
+	}
+
+	return models.DublinCore{
+		Creator:     creator,
+		Description: c.Description.Default(),
+		Format:      string(c.Format),
+		Rights:      c.Rights.Default(),
+		Source:      "",
+		Subject:     subject,
+		Title:       c.Title.Default(),
+	}
 }

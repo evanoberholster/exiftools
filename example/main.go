@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/c.JPG" //.jpg"
+	fname := "../../test/img/4.jpg" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {

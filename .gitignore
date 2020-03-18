@@ -13,3 +13,4 @@
 .DS_Store
 example/*.jpg
 example/exif-read-tool
+example/test.json

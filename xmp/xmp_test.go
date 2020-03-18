@@ -106,7 +106,7 @@ func TestDublinCore(t *testing.T) {
 	}
 
 	c := models.DublinCore{
-		Creator:     "John Doe",
+		Creator:     []string{"John Doe"},
 		Description: "",
 		Format:      "image/x-canon-cr2",
 		Rights:      "John Doe",
@@ -115,7 +115,7 @@ func TestDublinCore(t *testing.T) {
 		Title:       "",
 	}
 	dc := xmp.DublinCore(doc)
-	if c.Creator != dc.Creator {
+	if c.Creator[0] != dc.Creator[0] {
 		t.Fatal("Creator does not match", dc.Creator, c.Creator)
 	}
 	if c.Description != dc.Description {
