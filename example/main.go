@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -19,7 +17,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/4.jpg" //.jpg"
+	fname := "../../test/img/2.CR2" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -120,27 +118,14 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.ShutterSpeed, _ = x.GetShutterSpeed()
 	m.Exif.ExposureBias, _ = x.GetExposureBias()
 
-	// ModifyTimeStamp
-	//fmt.Println(x.JpegThumbnail())
-	//mknote.NikonPreviewImageTag
-	s, l, err := x.PreviewImage(mknote.NikonPreviewImageTag, mknote.SubIfd0PreviewImage, mknote.SubIfd1PreviewImage, mknote.SubIfd2JpegFromRaw)
-	nr := io.NewSectionReader(f, s, l)
-	b, err := ioutil.ReadAll(nr)
-	fw, err := os.Create("test.jpg")
-
-	defer fw.Close()
-	n, err := fw.Write(b)
-	fmt.Println("Bytes Written:", n)
-	if err != nil {
-		fmt.Println(err)
-	}
 	a, _ := json.Marshal(x)
 	colorJSON(a)
 	fmt.Println(x.DateTime())
 	//fmt.Println(x)
 	cr := new(mknote.CanonRaw)
 	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)
-	fmt.Println(mknote.CanonTimeZone(x))
+	fmt.Println("TimeZone: ", mknote.CanonTimeZone(x))
+	fmt.Println(m.Exif.CameraSettings)
 
 	return nil
 }

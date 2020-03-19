@@ -2,7 +2,9 @@ package mknote
 
 import (
 	"github.com/evanoberholster/exiftools/exif"
+	"github.com/evanoberholster/exiftools/mknote/canontags"
 	"github.com/evanoberholster/exiftools/models"
+	"github.com/evanoberholster/exiftools/tiff"
 )
 
 // Canon-specific fields
@@ -72,8 +74,16 @@ func (cr *CanonRaw) RawCameraSettings(x *exif.Exif) (CameraSettings, error) {
 	c.FocusMode = processCameraSettingsFields(tag, CanonFocusMode)
 	c.ExposureMode = processCameraSettingsFields(tag, CanonExposureMode)
 	c.MeteringMode = processCameraSettingsFields(tag, CanonMeteringMode)
-
+	c.Lens = cameraSettingsLensType(tag)
 	return c, nil
+}
+
+func cameraSettingsLensType(tag *tiff.Tag) string {
+	a, err := tag.Int(CanonLensType)
+	if err != nil {
+		return ""
+	}
+	return canontags.CanonLens(a)
 }
 
 // Canon Exif information constants
@@ -83,6 +93,7 @@ const (
 	CanonRecordMode      int = 9
 	CanonMeteringMode    int = 17
 	CanonExposureMode    int = 20
+	CanonLensType        int = 22
 	CanonAESetting       int = 33
 )
 
@@ -94,9 +105,11 @@ var CanonCameraSettingsFields = map[int]CameraSettingsField{
 	CanonMeteringMode:    models.CanonMeteringModeValues,
 	CanonExposureMode:    models.CanonExposureModeValues,
 	CanonAESetting:       models.CanonAESettingValues,
+	//CanonLensType:        canontags.CanonLensType,
 }
 
-var CanonMakerNoteTimeZones = map[int]string{
+// canonMakerNoteTimezones - Canon MakerNote Timezones
+var canonMakerNoteTimezones = map[int]string{
 	0:     "+00:00",
 	1:     "+12:45",
 	2:     "+12:00",
@@ -134,8 +147,8 @@ var CanonMakerNoteTimeZones = map[int]string{
 	32766: "+00:00",
 }
 
-// CanonMakerNoteTimeZoneValues
-var CanonMakerNoteTimeZoneValues = map[int]string{
+// canonMakerNoteTimezoneValues - Canon MakerNote Timezone values
+var canonMakerNoteTimezoneValues = map[int]string{
 	0:     "n/a",
 	1:     "Chatham Islands",
 	2:     "Wellington",
@@ -173,17 +186,17 @@ var CanonMakerNoteTimeZoneValues = map[int]string{
 	32766: "(not set)",
 }
 
-// CanonTimeZone -
+// CanonTimeZone - Canon TimeZone
 func CanonTimeZone(x *exif.Exif) string {
 	ti, err := x.Get(CanonTimeInfo)
 	if err != nil {
-		return CanonMakerNoteTimeZones[0]
+		return canonMakerNoteTimezones[0]
 	}
 
 	timeZone, err := ti.Int(2)
 	if err != nil {
-		return CanonMakerNoteTimeZones[0]
+		return canonMakerNoteTimezones[0]
 	}
 
-	return CanonMakerNoteTimeZones[timeZone]
+	return canonMakerNoteTimezones[timeZone]
 }

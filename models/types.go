@@ -12,6 +12,9 @@ var (
 	UnknownMeteringMode = MeteringMode(0)
 )
 
+// CameraModel -
+type CameraModel string
+
 // ExposureMode - Mode in which the Exposure was taken.
 type ExposureMode uint8
 

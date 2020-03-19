@@ -15,6 +15,7 @@ type CameraSettings struct {
 	ExposureMode    string `json:"ExposureMode"`
 	ContinuousDrive string `json:"ContinuousDrive"`
 	MeteringMode    string `json:"MeteringMode"`
+	Lens            string `json:"Lens"`
 }
 
 func processCameraSettingsFields(tag *tiff.Tag, i int) string {
