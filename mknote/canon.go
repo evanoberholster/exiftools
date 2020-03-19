@@ -13,6 +13,7 @@ var (
 	CanonShotInfo       exif.FieldName = "Canon.ShotInfo"       // A sub-IFD
 	CanonAFInfo         exif.FieldName = "Canon.AFInfo"
 	CanonTimeInfo       exif.FieldName = "Canon.TimeInfo"
+	CanonFileInfo       exif.FieldName = "Canon.FileInfo"
 	Canon0x0000         exif.FieldName = "Canon.0x0000"
 	Canon0x0003         exif.FieldName = "Canon.0x0003"
 	Canon0x00b5         exif.FieldName = "Canon.0x00b5"
@@ -43,6 +44,7 @@ var makerNoteCanonFields = map[uint16]exif.FieldName{
 	0x0035: CanonTimeInfo,
 	0x0083: OriginalDecisionDataOffset,
 	0x00a4: WhiteBalanceTable,
+	0x0093: CanonFileInfo,
 	0x0095: LensModel,
 	0x0096: InternalSerialNumber,
 	0x0097: DustRemovalData,
@@ -59,23 +61,79 @@ var makerNoteCanonFields = map[uint16]exif.FieldName{
 }
 
 // CanonRaw - Raw Image from a Canon Camera
-type CanonRaw struct{}
+type CanonRaw struct {
+	ModelID             string
+	SerialNumber        string
+	CanonShotInfo       canontags.CanonShotInfo `json:"CanonShotInfo"`
+	CanonCameraSettings CameraSettings
+	CanonAFInfo         canontags.CanonAFInfo
+}
 
-// RawCameraSettings - Get Canon camera Settings
-func (cr *CanonRaw) RawCameraSettings(x *exif.Exif) (CameraSettings, error) {
-	c := CameraSettings{}
+func (cr *CanonRaw) Get(x *exif.Exif) error {
+	if err := cr.canonCameraSettings(x); err != nil {
+		return err
+	}
+	if err := cr.canonShotInfo(x); err != nil {
+		return err
+	}
+	if err := cr.canonAFInfo(x); err != nil {
+		return err
+	}
+	cr.modelID(x)
+	return nil
+}
+
+// CanonCameraSettings - Get Canon camera Settings
+func (cr *CanonRaw) canonCameraSettings(x *exif.Exif) error {
 	tag, err := x.Get(CanonCameraSettings)
 	if err != nil {
-		return c, err
+		return err
 	}
 
-	c.ContinuousDrive = processCameraSettingsFields(tag, CanonContinuousDrive)
-	c.RecordMode = processCameraSettingsFields(tag, CanonRecordMode)
-	c.FocusMode = processCameraSettingsFields(tag, CanonFocusMode)
-	c.ExposureMode = processCameraSettingsFields(tag, CanonExposureMode)
-	c.MeteringMode = processCameraSettingsFields(tag, CanonMeteringMode)
-	c.Lens = cameraSettingsLensType(tag)
-	return c, nil
+	cr.CanonCameraSettings.ContinuousDrive = processCameraSettingsFields(tag, CanonContinuousDrive)
+	cr.CanonCameraSettings.RecordMode = processCameraSettingsFields(tag, CanonRecordMode)
+	cr.CanonCameraSettings.FocusMode = processCameraSettingsFields(tag, CanonFocusMode)
+	cr.CanonCameraSettings.ExposureMode = processCameraSettingsFields(tag, CanonExposureMode)
+	cr.CanonCameraSettings.MeteringMode = processCameraSettingsFields(tag, CanonMeteringMode)
+	cr.CanonCameraSettings.Lens = cameraSettingsLensType(tag)
+
+	return nil
+}
+
+// ModelID - Get Canon Model ID
+func (cr *CanonRaw) modelID(x *exif.Exif) error {
+	tag, err := x.Get(ModelID)
+	if err != nil {
+		return canontags.ErrModelNotFound
+	}
+	i, _ := tag.Int(0)
+	m, err := canontags.CanonModel(uint32(i))
+	if err != nil {
+		return err
+	}
+	cr.ModelID = string(m)
+	return nil
+}
+
+// FileNumber - File Number
+func (cr *CanonRaw) FileNumber(x *exif.Exif) {
+
+}
+
+func (cr *CanonRaw) canonAFInfo(x *exif.Exif) error {
+	tag, err := x.Get(CanonAFInfo)
+	if err != nil {
+		return err
+	}
+	return cr.CanonAFInfo.Get(tag)
+}
+
+func (cr *CanonRaw) canonShotInfo(x *exif.Exif) error {
+	tag, err := x.Get(CanonShotInfo)
+	if err != nil {
+		return err
+	}
+	return cr.CanonShotInfo.Get(tag)
 }
 
 func cameraSettingsLensType(tag *tiff.Tag) string {

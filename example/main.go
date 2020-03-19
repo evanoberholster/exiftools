@@ -123,9 +123,12 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	fmt.Println(x.DateTime())
 	//fmt.Println(x)
 	cr := new(mknote.CanonRaw)
-	m.Exif.CameraSettings, _ = cr.RawCameraSettings(x)
+	cr.Get(x)
+	m.Exif.CameraSettings = cr.CanonCameraSettings
 	fmt.Println("TimeZone: ", mknote.CanonTimeZone(x))
 	fmt.Println(m.Exif.CameraSettings)
+	fmt.Println(cr)
+	fmt.Println(x.Get(mknote.CanonFileInfo))
 
 	return nil
 }
