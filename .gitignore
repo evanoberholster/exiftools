@@ -13,5 +13,5 @@
 .DS_Store
 example/*.jpg
 example/exif-read-tool
-# example/*.json
+example/*.json
 mknote/canontags/*.pm
