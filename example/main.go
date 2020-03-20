@@ -68,8 +68,7 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif = Exif{}
 	f.Seek(0, 0)
 
-	// Optionally register camera makenote data parsing - currently Nikon and
-	// Canon are supported.
+	// Optionally register camera makernote data parsing - Canon, Nikon and AdobeDNG are supported
 	exif.RegisterParsers(mknote.All...)
 
 	x, err := exif.DecodeWithParseHeader(f)
@@ -83,16 +82,15 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 
 	m.Exif.GPSLatitude, m.Exif.GPSLongitude, _ = x.LatLong()
 
-	m.Exif.DateTimeOriginal, err = x.DateTime()
-	if err != nil {
-		panic(err)
-	}
+	m.Exif.DateTimeOriginal, _ = x.DateTime()
+
 	m.Exif.FocalLength, _ = x.FocalLength(exif.FocalLength)
 
 	m.Exif.FocalLengthEqv, _ = x.FocalLength(exif.FocalLengthIn35mmFilm)
 	m.Exif.ExposureMode, _ = x.GetExposureMode()
 	m.Exif.MeteringMode, _ = x.GetMeteringMode()
 	m.Exif.Flash, _ = x.GetFlashMode()
+
 	// Image Size
 	m.Exif.ImageHeight, _ = x.GetUints(exif.ImageLength, exif.PixelYDimension)
 	//if err != nil {
@@ -119,15 +117,16 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.ShutterSpeed, _ = x.GetShutterSpeed()
 	m.Exif.ExposureBias, _ = x.GetExposureBias()
 
-	a, _ := json.Marshal(x)
-	ioutil.WriteFile("m.json", []byte(a), 0644)
 	//colorJSON(a)
-	fmt.Println(x.DateTime())
+	//fmt.Println(x.DateTime())
 	cr := new(mknote.CanonRaw)
 	cr.Get(x)
-	fmt.Println("TimeZone: ", mknote.CanonTimeZone(x))
 	fmt.Println(cr)
+	//m.CanonRaw = *cr
 	//fmt.Println(x.Get(mknote.CanonFileInfo))
+
+	a, _ := json.Marshal(m)
+	ioutil.WriteFile("m.json", []byte(a), 0644)
 
 	return nil
 }
@@ -135,15 +134,14 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 func metadata(f *os.File) {
 	var err error
 
-	// Create Metadata
+	// Create New Metadata
 	m := NewMetadata(f)
 
-	err = m.xmpMetadata(f)
-	if err != nil {
+	if err = m.xmpMetadata(f); err != nil {
 		log.Println(err)
 	}
-	err = m.exifMetadata(f)
-	if err != nil {
+
+	if err = m.exifMetadata(f); err != nil {
 		log.Println(err)
 	}
 

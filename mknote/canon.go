@@ -1,6 +1,8 @@
 package mknote
 
 import (
+	"fmt"
+
 	"github.com/evanoberholster/exiftools/exif"
 	"github.com/evanoberholster/exiftools/mknote/canontags"
 	"github.com/evanoberholster/exiftools/models"
@@ -69,6 +71,7 @@ type CanonRaw struct {
 	ModelID             string
 	SerialNumber        string
 	ImageType           string
+	Timezone            string
 	CanonShotInfo       canontags.CanonShotInfo `json:"CanonShotInfo"`
 	CanonCameraSettings CameraSettings
 	CanonAFInfo         canontags.CanonAFInfo
@@ -87,10 +90,11 @@ func (cr *CanonRaw) Get(x *exif.Exif) error {
 	}
 	cr.imageType(x)
 	cr.modelID(x)
+	cr.timezone(x)
 	return nil
 }
 
-// CanonCameraSettings - Get Canon camera Settings
+// CanonCameraSettings - Get Canon camera Settings from MakerNote
 func (cr *CanonRaw) canonCameraSettings(x *exif.Exif) error {
 	tag, err := x.Get(CanonCameraSettings)
 	if err != nil {
@@ -276,17 +280,20 @@ var canonMakerNoteTimezoneValues = map[int]string{
 	32766: "(not set)",
 }
 
-// CanonTimeZone - Canon TimeZone
-func CanonTimeZone(x *exif.Exif) string {
-	ti, err := x.Get(CanonTimeInfo)
+// Timezone - Get Timezone information from MakerNote
+func (cr *CanonRaw) timezone(x *exif.Exif) error {
+	tag, err := x.Get(CanonTimeInfo)
 	if err != nil {
-		return canonMakerNoteTimezones[0]
+		return canontags.ErrMakerNote
 	}
 
-	timeZone, err := ti.Int(2)
+	tz, err := tag.Int(2)
 	if err != nil {
-		return canonMakerNoteTimezones[0]
+		return canontags.ErrMakerNote
 	}
 
-	return canonMakerNoteTimezones[timeZone]
+	//dst, _ := ti.Int(3)
+	cr.Timezone = canonMakerNoteTimezones[tz]
+	fmt.Println("Timezones", tag)
+	return nil
 }

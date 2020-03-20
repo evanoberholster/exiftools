@@ -38,7 +38,7 @@ type CanonAFInfo struct {
 }
 
 // Get CanonAFInfo
-// Work In Progress, currently with ERRORS - March 19, 2020
+// WIP - March 20, 2020
 func (cai *CanonAFInfo) Get(tag *tiff.Tag) error {
 	if i, err := tag.Int(1); err == nil {
 		cai.AFAreaMode = afAreaModeValues[i]
