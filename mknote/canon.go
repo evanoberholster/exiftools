@@ -9,16 +9,19 @@ import (
 
 // Canon-specific fields
 var (
-	CanonCameraSettings exif.FieldName = "Canon.CameraSettings" // A sub-IFD
-	CanonShotInfo       exif.FieldName = "Canon.ShotInfo"       // A sub-IFD
-	CanonAFInfo         exif.FieldName = "Canon.AFInfo"
-	CanonTimeInfo       exif.FieldName = "Canon.TimeInfo"
-	CanonFileInfo       exif.FieldName = "Canon.FileInfo"
-	Canon0x0000         exif.FieldName = "Canon.0x0000"
-	Canon0x0003         exif.FieldName = "Canon.0x0003"
-	Canon0x00b5         exif.FieldName = "Canon.0x00b5"
-	Canon0x00c0         exif.FieldName = "Canon.0x00c0"
-	Canon0x00c1         exif.FieldName = "Canon.0x00c1"
+	CanonCameraSettings   exif.FieldName = "Canon.CameraSettings" // A sub-IFD
+	CanonShotInfo         exif.FieldName = "Canon.ShotInfo"       // A sub-IFD
+	CanonAFInfo           exif.FieldName = "Canon.AFInfo"
+	CanonTimeInfo         exif.FieldName = "Canon.TimeInfo"
+	CanonFileInfo         exif.FieldName = "Canon.FileInfo"
+	CanonImageType        exif.FieldName = "Canon.ImageType"
+	CanonPreviewImageInfo exif.FieldName = "Canon.PreviewImageInfo"
+	CanonSerialNumber     exif.FieldName = "Canon.SerialNumber"
+	Canon0x0000           exif.FieldName = "Canon.0x0000"
+	Canon0x0003           exif.FieldName = "Canon.0x0003"
+	Canon0x00b5           exif.FieldName = "Canon.0x00b5"
+	Canon0x00c0           exif.FieldName = "Canon.0x00c0"
+	Canon0x00c1           exif.FieldName = "Canon.0x00c1"
 )
 
 var makerNoteCanonFields = map[uint16]exif.FieldName{
@@ -28,11 +31,11 @@ var makerNoteCanonFields = map[uint16]exif.FieldName{
 	0x0003: Canon0x0003,
 	0x0004: CanonShotInfo,
 	0x0005: Panorama,
-	0x0006: ImageType,
+	0x0006: CanonImageType,
 	0x0007: FirmwareVersion,
 	0x0008: FileNumber,
 	0x0009: OwnerName,
-	0x000c: SerialNumber,
+	0x000c: CanonSerialNumber,
 	0x000d: CameraInfo,
 	0x000f: CustomFunctions,
 	0x0010: ModelID,
@@ -53,6 +56,7 @@ var makerNoteCanonFields = map[uint16]exif.FieldName{
 	0x00aa: MeasuredColor,
 	0x00b4: exif.ColorSpace,
 	0x00b5: Canon0x00b5,
+	0x00b6: CanonPreviewImageInfo,
 	0x00c0: Canon0x00c0,
 	0x00c1: Canon0x00c1,
 	0x00d0: VRDOffset,
@@ -64,11 +68,13 @@ var makerNoteCanonFields = map[uint16]exif.FieldName{
 type CanonRaw struct {
 	ModelID             string
 	SerialNumber        string
+	ImageType           string
 	CanonShotInfo       canontags.CanonShotInfo `json:"CanonShotInfo"`
 	CanonCameraSettings CameraSettings
 	CanonAFInfo         canontags.CanonAFInfo
 }
 
+// Get CanonRaw from exif
 func (cr *CanonRaw) Get(x *exif.Exif) error {
 	if err := cr.canonCameraSettings(x); err != nil {
 		return err
@@ -79,6 +85,7 @@ func (cr *CanonRaw) Get(x *exif.Exif) error {
 	if err := cr.canonAFInfo(x); err != nil {
 		return err
 	}
+	cr.imageType(x)
 	cr.modelID(x)
 	return nil
 }
@@ -90,21 +97,36 @@ func (cr *CanonRaw) canonCameraSettings(x *exif.Exif) error {
 		return err
 	}
 
-	cr.CanonCameraSettings.ContinuousDrive = processCameraSettingsFields(tag, CanonContinuousDrive)
-	cr.CanonCameraSettings.RecordMode = processCameraSettingsFields(tag, CanonRecordMode)
-	cr.CanonCameraSettings.FocusMode = processCameraSettingsFields(tag, CanonFocusMode)
-	cr.CanonCameraSettings.ExposureMode = processCameraSettingsFields(tag, CanonExposureMode)
-	cr.CanonCameraSettings.MeteringMode = processCameraSettingsFields(tag, CanonMeteringMode)
+	cr.CanonCameraSettings.ContinuousDrive = processCameraSettingsMap(tag, CanonContinuousDrive)
+	cr.CanonCameraSettings.RecordMode = processCameraSettingsMap(tag, CanonRecordMode)
+	cr.CanonCameraSettings.FocusMode = processCameraSettingsMap(tag, CanonFocusMode)
+	cr.CanonCameraSettings.ExposureMode = processCameraSettingsMap(tag, CanonExposureMode)
+	cr.CanonCameraSettings.MeteringMode = processCameraSettingsMap(tag, CanonMeteringMode)
 	cr.CanonCameraSettings.Lens = cameraSettingsLensType(tag)
+	// AFPoint
+	// Flash Activity
+	// AESetting
+	// ImageStabilization
+	// SpotMeteringMode
+	// RecordMode
+	// CanonFlashMode
 
 	return nil
 }
 
-// ModelID - Get Canon Model ID
+func processCameraSettingsMap(tag *tiff.Tag, i int) string {
+	a, err := tag.Int(i)
+	if err != nil {
+		return ""
+	}
+	return CanonCameraSettingsFields[i][a]
+}
+
+// ModelID - Get Canon Model ID from MakerNote
 func (cr *CanonRaw) modelID(x *exif.Exif) error {
 	tag, err := x.Get(ModelID)
 	if err != nil {
-		return canontags.ErrModelNotFound
+		return canontags.ErrMakerNote
 	}
 	i, _ := tag.Int(0)
 	m, err := canontags.CanonModel(uint32(i))
@@ -115,8 +137,19 @@ func (cr *CanonRaw) modelID(x *exif.Exif) error {
 	return nil
 }
 
+// ImageType - Get Canon Image Type from MakerNote
+func (cr *CanonRaw) imageType(x *exif.Exif) error {
+	tag, err := x.Get(CanonImageType)
+	if err != nil {
+		return canontags.ErrMakerNote
+	}
+	cr.ImageType, err = tag.StringVal()
+	return err
+}
+
 // FileNumber - File Number
-func (cr *CanonRaw) FileNumber(x *exif.Exif) {
+// WIP
+func (cr *CanonRaw) fileNumber(x *exif.Exif) {
 
 }
 
@@ -163,7 +196,6 @@ var CanonCameraSettingsFields = map[int]CameraSettingsField{
 	CanonMeteringMode:    models.CanonMeteringModeValues,
 	CanonExposureMode:    models.CanonExposureModeValues,
 	CanonAESetting:       models.CanonAESettingValues,
-	//CanonLensType:        canontags.CanonLensType,
 }
 
 // canonMakerNoteTimezones - Canon MakerNote Timezones

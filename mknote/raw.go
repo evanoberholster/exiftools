@@ -2,7 +2,6 @@ package mknote
 
 import (
 	"github.com/evanoberholster/exiftools/exif"
-	"github.com/evanoberholster/exiftools/tiff"
 )
 
 // CameraSettingsField -
@@ -16,14 +15,6 @@ type CameraSettings struct {
 	ContinuousDrive string `json:"ContinuousDrive"`
 	MeteringMode    string `json:"MeteringMode"`
 	Lens            string `json:"Lens"`
-}
-
-func processCameraSettingsFields(tag *tiff.Tag, i int) string {
-	a, err := tag.Int(i)
-	if err != nil {
-		return ""
-	}
-	return CanonCameraSettingsFields[i][a]
 }
 
 // RawImage -

@@ -65,13 +65,11 @@ func (_ *canon) Parse(x *exif.Exif) error {
 		return nil
 	}
 
-	mk, err := x.Get(exif.Make)
-	if err != nil {
-		return nil
-	}
-
-	if val, err := mk.StringVal(); err != nil || val != "Canon" {
-		return nil
+	// Confirm that exif.Make is Canon
+	if mk, err := x.Get(exif.Make); err != nil {
+		if val, err := mk.StringVal(); err != nil || val != "Canon" {
+			return nil
+		}
 	}
 
 	// Canon notes are a single IFD directory with no header.
@@ -83,9 +81,9 @@ func (_ *canon) Parse(x *exif.Exif) error {
 	if err != nil {
 		return err
 	}
+	// Parse Canon MakerFields
 	x.LoadTags(mkNotesDir, makerNoteCanonFields, false)
-	//	if err := loadSubDir(x, cReader, CanonCameraSettings, makerNoteNikon3PreviewFields); err != nil {
-	//	}
+
 	return nil
 }
 

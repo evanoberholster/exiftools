@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -119,16 +120,14 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	m.Exif.ExposureBias, _ = x.GetExposureBias()
 
 	a, _ := json.Marshal(x)
-	colorJSON(a)
+	ioutil.WriteFile("m.json", []byte(a), 0644)
+	//colorJSON(a)
 	fmt.Println(x.DateTime())
-	//fmt.Println(x)
 	cr := new(mknote.CanonRaw)
 	cr.Get(x)
-	m.Exif.CameraSettings = cr.CanonCameraSettings
 	fmt.Println("TimeZone: ", mknote.CanonTimeZone(x))
-	fmt.Println(m.Exif.CameraSettings)
 	fmt.Println(cr)
-	fmt.Println(x.Get(mknote.CanonFileInfo))
+	//fmt.Println(x.Get(mknote.CanonFileInfo))
 
 	return nil
 }

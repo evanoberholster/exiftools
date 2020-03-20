@@ -18,6 +18,7 @@ var (
 	UnknownCameraLensType = CanonLensType([]string{"Unknown"})
 	ErrModelNotFound      = errors.New("Model Not Found")
 	ErrLensTypeNotFound   = errors.New("Lens type Not Found")
+	ErrMakerNote          = errors.New("Error reading MakerNote")
 )
 
 // CanonAFInfo - Work In Progress
@@ -72,16 +73,16 @@ func (fd *FocusDistance) String() string {
 	return fmt.Sprintf("%f.2 - %f.2", fd[0], fd[1])
 }
 
-// CanonShotInfo - Work In Progress
+// CanonShotInfo - WIP
 type CanonShotInfo struct {
 	ExposureCompensation int
 	CameraTemperature    int
 	FlashGuideNumber     int
+	SequenceNumber       int
 	//FlashExposureComp    int
 	//AutoExposureBra      int
 	//AEBBracketVal        int
-	FocusDistance  FocusDistance
-	SequenceNumber int
+	//FocusDistance  FocusDistance
 }
 
 // Get the CanonShotInfo from a *tiff.Tag
@@ -90,7 +91,6 @@ func (csi *CanonShotInfo) Get(tag *tiff.Tag) error {
 	if e, err := tag.Int(6); err == nil {
 		csi.ExposureCompensation = e
 	}
-
 	// 9: SequenceNumber
 	if e, err := tag.Int(9); err == nil {
 		csi.SequenceNumber = e
@@ -104,12 +104,11 @@ func (csi *CanonShotInfo) Get(tag *tiff.Tag) error {
 		csi.FlashGuideNumber = e / 32 // Conversion
 	}
 	// FocusDistance
-	if fdUpper, err := tag.Int(19); err == nil { // 19: FocusDistanceUpper
-		if fdLower, err := tag.Int(20); err == nil { // 20: FocusDistanceLower
-			csi.FocusDistance = FocusDistance{float32(fdUpper), float32(fdLower)}
-		}
-	}
-
+	//if fdUpper, err := tag.Int(19); err == nil { // 19: FocusDistanceUpper
+	//	if fdLower, err := tag.Int(20); err == nil { // 20: FocusDistanceLower
+	//		csi.FocusDistance = FocusDistance{float32(fdUpper), float32(fdLower)}
+	//	}
+	//}
 	return nil
 }
 
@@ -176,8 +175,3 @@ var afAreaModeValues = map[int]string{
 	13: "Flexizone Single",
 	14: "Large Zone AF",
 }
-
-// %canonQuality
-// %canonWhiteBalance
-// %pictureStyles
-// %userDefStyles

@@ -11,7 +11,7 @@ var (
 	NikonWhiteBalance   exif.FieldName = "Nikon.WhiteBalance"
 	NikonColorSpace     exif.FieldName = "Nikon.ColorSpace"
 	NikonLightSource    exif.FieldName = "Nikon.LightSource"
-	NikonSaturation     exif.FieldName = "Nikon_Saturation"
+	NikonSaturation     exif.FieldName = "Nikon.Saturation"
 	NikonShotInfo       exif.FieldName = "Nikon.ShotInfo"       // A sub-IFD
 	NikonVRInfo         exif.FieldName = "Nikon.VRInfo"         // A sub-IFD
 	NikonPictureControl exif.FieldName = "Nikon.PictureControl" // A sub-IFD
