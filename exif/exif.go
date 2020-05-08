@@ -760,7 +760,6 @@ func DecodeWithParseHeader(r io.Reader) (x *Exif, err error) {
 //      CIPA DC-008-2016; JEITA CP-3451D
 //      -> http://www.cipa.jp/std/documents/e/DC-008-Translation-2016-E.pdf
 func parseExifHeader(data []byte) error {
-
 	if len(data) < 2 {
 		return fmt.Errorf("Not enough data for EXIF header (1): (%d)", len(data))
 	}
@@ -791,8 +790,8 @@ func parseExifHeader(data []byte) error {
 
 var (
 	exifFixedBytesLookup = map[binary.ByteOrder][2]byte{
-		binary.LittleEndian: [2]byte{0x2a, 0x00},
-		binary.BigEndian:    [2]byte{0x00, 0x2a},
+		binary.LittleEndian: {0x2a, 0x00},
+		binary.BigEndian:    {0x00, 0x2a},
 	}
 	byteOrderLookup = map[[2]byte]binary.ByteOrder{
 		bigEndianBoBytes:    binary.BigEndian,
