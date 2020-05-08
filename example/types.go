@@ -4,15 +4,16 @@ import (
 	"time"
 
 	"github.com/evanoberholster/exiftools/models"
+	"github.com/evanoberholster/exiftools/xmp"
 )
 
 // Metadata -
 type Metadata struct {
-	FileSize   int64             `json:"FileSize"`
-	MIMEType   string            `json:"MIMEType"`
-	DublinCore models.DublinCore `json:"DublinCore"`
-	XmpBase    models.XmpBase    `json:"XmpBase"`
-	Exif       Exif              `json:"Exif"`
+	FileSize   int64          `json:"FileSize"`
+	MIMEType   string         `json:"MIMEType"`
+	DublinCore xmp.DublinCore `json:"DublinCore"`
+	XmpBase    xmp.XmpBase    `json:"XmpBase"`
+	Exif       Exif           `json:"Exif"`
 	//CanonRaw   mknote.CanonRaw   `json:"CanonRaw"`
 }
 

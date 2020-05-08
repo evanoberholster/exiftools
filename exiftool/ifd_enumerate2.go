@@ -74,9 +74,8 @@ type IfdTagEnumerator struct {
 func NewIfdTagEnumerator2(reader *ExifReader, byteOrder binary.ByteOrder, ifdOffset uint32) (enumerator *IfdTagEnumerator) {
 	enumerator = &IfdTagEnumerator{
 		exifReader: reader.NewReader(int64(ifdOffset)),
-		//addressableData: addressableData,
-		byteOrder: byteOrder,
-		buffer:    new(bytes.Buffer),
+		byteOrder:  byteOrder,
+		buffer:     new(bytes.Buffer),
 		//buffer:    bytes.NewBuffer(addressableData[ifdOffset:]),
 	}
 
@@ -86,7 +85,6 @@ func NewIfdTagEnumerator2(reader *ExifReader, byteOrder binary.ByteOrder, ifdOff
 func (ie *IfdEnumerate) getTagEnumerator2(ifdOffset uint32) (enumerator *IfdTagEnumerator) {
 	enumerator = NewIfdTagEnumerator2(
 		ie.exifReader,
-		//ie.exifData[ExifAddressableAreaStart:],
 		ie.byteOrder,
 		ifdOffset)
 
@@ -140,7 +138,7 @@ func (ie *IfdEnumerate) ParseIfd2(fqIfdPath string, ifdIndex int, enumerator *If
 			continue
 		}
 
-		if visitor != nil {
+		if visitor != nil && ite.ChildIfdPath() == "" {
 			if err := visitor(fqIfdPath, ifdIndex, ite); err != nil {
 				panic(err)
 			}
@@ -151,7 +149,7 @@ func (ie *IfdEnumerate) ParseIfd2(fqIfdPath string, ifdIndex int, enumerator *If
 		// (the standard IFD tag type), later, unless we skip it because it's
 		// [likely] not even in the standard list of known tags.
 		if ite.ChildIfdPath() != "" {
-			fmt.Println(ite.childIfdPath)
+			//fmt.Println(ite.childIfdPath)
 			if doDescend == true {
 				//fmt.Println(ite.getValueOffset())
 				//ifdEnumerateLogger.Debugf(nil, "Descending to IFD [%s].", ite.ChildIfdPath())
@@ -215,6 +213,7 @@ func (ie *IfdEnumerate) parseTag2(fqIfdPath string, tagPosition int, enumerator 
 	if err != nil {
 		panic(err)
 	}
+	//fmt.Println(valueOffset, rawValueOffset)
 
 	if tagType.IsValid() == false {
 		panic(ErrTagTypeNotValid)
@@ -233,7 +232,7 @@ func (ie *IfdEnumerate) parseTag2(fqIfdPath string, tagPosition int, enumerator 
 		unitCount,
 		valueOffset,
 		rawValueOffset,
-		ie.exifData[ExifAddressableAreaStart:],
+		ie.exifReader,
 		ie.byteOrder)
 
 	// If it's an IFD but not a standard one, it'll just be seen as a LONG

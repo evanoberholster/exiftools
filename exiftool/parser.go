@@ -1,4 +1,4 @@
-package exif
+package exiftool
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	log "github.com/dsoprea/go-logging"
+	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
 var (
@@ -44,7 +45,7 @@ func (p *Parser) ParseBytes(data []byte, unitCount uint32) (value []uint8, err e
 
 	count := int(unitCount)
 
-	if len(data) < (TypeByte.Size() * count) {
+	if len(data) < (exif.TypeByte.Size() * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -66,7 +67,7 @@ func (p *Parser) ParseASCII(data []byte, unitCount uint32) (value string, err er
 
 	count := int(unitCount)
 
-	if len(data) < (TypeASCII.Size() * count) {
+	if len(data) < (exif.TypeASCII.Size() * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -93,7 +94,7 @@ func (p *Parser) ParseASCIINoNul(data []byte, unitCount uint32) (value string, e
 	}()
 	count := int(unitCount)
 
-	if len(data) < (TypeASCII.Size() * count) {
+	if len(data) < (exif.TypeASCII.Size() * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -111,7 +112,7 @@ func (p *Parser) ParseShorts(data []byte, unitCount uint32, byteOrder binary.Byt
 	}()
 	count := int(unitCount)
 
-	if len(data) < (TypeShort.Size() * count) {
+	if len(data) < (exif.TypeShort.Size() * count) {
 		log.Panic(ErrNotEnoughData)
 	}
 
@@ -134,7 +135,7 @@ func (p *Parser) ParseLongs(data []byte, unitCount uint32, byteOrder binary.Byte
 
 	count := int(unitCount)
 
-	if len(data) < (TypeLong.Size() * count) {
+	if len(data) < (exif.TypeLong.Size() * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -149,7 +150,7 @@ func (p *Parser) ParseLongs(data []byte, unitCount uint32, byteOrder binary.Byte
 
 // ParseRationals knows how to parse an encoded list of unsigned rationals.
 // TODO: Add Test & Benchmark
-func (p *Parser) ParseRationals(data []byte, unitCount uint32, byteOrder binary.ByteOrder) (value []Rational, err error) {
+func (p *Parser) ParseRationals(data []byte, unitCount uint32, byteOrder binary.ByteOrder) (value []exif.Rational, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
@@ -158,12 +159,12 @@ func (p *Parser) ParseRationals(data []byte, unitCount uint32, byteOrder binary.
 
 	count := int(unitCount)
 
-	if len(data) < (TypeRational.Size() * count) {
+	if len(data) < (exif.TypeRational.Size() * count) {
 		err = ErrNotEnoughData
 		return
 	}
 
-	value = make([]Rational, count)
+	value = make([]exif.Rational, count)
 	for i := 0; i < count; i++ {
 		value[i].Numerator = byteOrder.Uint32(data[i*8:])
 		value[i].Denominator = byteOrder.Uint32(data[i*8+4:])
@@ -183,7 +184,7 @@ func (p *Parser) ParseSignedLongs(data []byte, unitCount uint32, byteOrder binar
 
 	count := int(unitCount)
 
-	if len(data) < (TypeSignedLong.Size() * count) {
+	if len(data) < (exif.TypeSignedLong.Size() * count) {
 		err = ErrNotEnoughData
 	}
 
@@ -202,7 +203,7 @@ func (p *Parser) ParseSignedLongs(data []byte, unitCount uint32, byteOrder binar
 // ParseSignedRationals knows how to parse an encoded list of signed
 // rationals.
 // TODO: Add Test & Benchmark
-func (p *Parser) ParseSignedRationals(data []byte, unitCount uint32, byteOrder binary.ByteOrder) (value []SignedRational, err error) {
+func (p *Parser) ParseSignedRationals(data []byte, unitCount uint32, byteOrder binary.ByteOrder) (value []exif.SignedRational, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
@@ -210,13 +211,13 @@ func (p *Parser) ParseSignedRationals(data []byte, unitCount uint32, byteOrder b
 	}()
 	count := int(unitCount)
 
-	if len(data) < (TypeSignedRational.Size() * count) {
+	if len(data) < (exif.TypeSignedRational.Size() * count) {
 		log.Panic(ErrNotEnoughData)
 	}
 
 	b := bytes.NewBuffer(data)
 
-	value = make([]SignedRational, count)
+	value = make([]exif.SignedRational, count)
 	for i := 0; i < count; i++ {
 		if err = binary.Read(b, byteOrder, &value[i].Numerator); err != nil {
 			return

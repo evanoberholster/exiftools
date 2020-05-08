@@ -1,36 +1,40 @@
-package exif
+package exiftool
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
 // ValueContext embeds all of the parameters required to find and extract the
 // actual tag value.
 type ValueContext struct {
-	unitCount       uint32
-	valueOffset     uint32
-	rawValueOffset  []byte
+	unitCount      uint32
+	valueOffset    uint32
+	rawValueOffset []byte
+
+	exifReader      *ExifReader
 	addressableData []byte
 
-	tagType   TagType
+	tagType   exif.TagType
 	byteOrder binary.ByteOrder
 
 	// undefinedValueTagType is the effective type to use if this is an
 	// "undefined" value.
-	undefinedValueTagType TagType
+	undefinedValueTagType exif.TagType
 
 	ifdPath string
-	tagID   TagID
+	tagID   exif.TagID
 }
 
 // NewValueContext returns a new ValueContext struct.
-func NewValueContext(ifdPath string, tagID TagID, unitCount, valueOffset uint32, rawValueOffset, addressableData []byte, tagType TagType, byteOrder binary.ByteOrder) *ValueContext {
+func NewValueContext(ifdPath string, tagID exif.TagID, unitCount, valueOffset uint32, rawValueOffset []byte, exifReader *ExifReader, tagType exif.TagType, byteOrder binary.ByteOrder) *ValueContext {
 	return &ValueContext{
-		unitCount:       unitCount,
-		valueOffset:     valueOffset,
-		rawValueOffset:  rawValueOffset,
-		addressableData: addressableData,
+		unitCount:      unitCount,
+		valueOffset:    valueOffset,
+		rawValueOffset: rawValueOffset,
+		exifReader:     exifReader,
 
 		tagType:   tagType,
 		byteOrder: byteOrder,
@@ -42,8 +46,8 @@ func NewValueContext(ifdPath string, tagID TagID, unitCount, valueOffset uint32,
 
 // effectiveValueType returns the effective type of the unknown-type tag or, if
 // not unknown, the actual type.
-func (vc *ValueContext) effectiveValueType() (tagType TagType) {
-	if vc.tagType == TypeUndefined {
+func (vc *ValueContext) effectiveValueType() (tagType exif.TagType) {
+	if vc.tagType == exif.TypeUndefined {
 		tagType = vc.undefinedValueTagType
 
 		if tagType == 0 {
@@ -65,23 +69,23 @@ func (vc *ValueContext) effectiveValueType() (tagType TagType) {
 func (vc *ValueContext) Values() (values interface{}, err error) {
 
 	switch vc.tagType {
-	case TypeByte:
+	case exif.TypeByte:
 		return vc.ReadBytes()
-	case TypeASCII:
+	case exif.TypeASCII:
 		return vc.ReadASCII()
-	case TypeASCIINoNul:
+	case exif.TypeASCIINoNul:
 		return vc.ReadASCIINoNul()
-	case TypeLong:
+	case exif.TypeLong:
 		return vc.ReadLongs()
-	case TypeShort:
+	case exif.TypeShort:
 		return vc.ReadShorts()
-	case TypeRational:
+	case exif.TypeRational:
 		return vc.ReadRationals()
-	case TypeSignedLong:
+	case exif.TypeSignedLong:
 		return vc.ReadSignedLongs()
-	case TypeSignedRational:
+	case exif.TypeSignedRational:
 		return vc.ReadSignedRationals()
-	case TypeUndefined:
+	case exif.TypeUndefined:
 		return nil, fmt.Errorf("Will not parse undefined-type value")
 	default:
 		return nil, fmt.Errorf("Value of type [%s] is unparseable", vc.tagType)

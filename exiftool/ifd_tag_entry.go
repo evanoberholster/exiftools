@@ -3,7 +3,6 @@ package exiftool
 import (
 	"encoding/binary"
 
-	log "github.com/dsoprea/go-logging"
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
@@ -36,20 +35,21 @@ type IfdTagEntry struct {
 	isUnhandledUnknown bool
 
 	addressableData []byte
+	exifReader      *ExifReader
 	byteOrder       binary.ByteOrder
 }
 
-func newIfdTagEntry(ifdPath string, tagID exif.TagID, tagIndex int, tagType exif.TagType, unitCount uint32, valueOffset uint32, rawValueOffset []byte, addressableData []byte, byteOrder binary.ByteOrder) *IfdTagEntry {
+func newIfdTagEntry(ifdPath string, tagID exif.TagID, tagIndex int, tagType exif.TagType, unitCount uint32, valueOffset uint32, rawValueOffset []byte, exifReader *ExifReader, byteOrder binary.ByteOrder) *IfdTagEntry {
 	return &IfdTagEntry{
-		ifdPath:         ifdPath,
-		tagID:           tagID,
-		tagIndex:        tagIndex,
-		tagType:         tagType,
-		unitCount:       unitCount,
-		valueOffset:     valueOffset,
-		rawValueOffset:  rawValueOffset,
-		addressableData: addressableData,
-		byteOrder:       byteOrder,
+		ifdPath:        ifdPath,
+		tagID:          tagID,
+		tagIndex:       tagIndex,
+		tagType:        tagType,
+		unitCount:      unitCount,
+		valueOffset:    valueOffset,
+		rawValueOffset: rawValueOffset,
+		exifReader:     exifReader,
+		byteOrder:      byteOrder,
 	}
 }
 
@@ -117,23 +117,28 @@ func (ite *IfdTagEntry) Value() (value interface{}, err error) {
 		//	log.Panic(err)
 		//}
 	} else {
-		var err error
-
 		value, err = valueContext.Values()
-		log.PanicIf(err)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	return value, nil
 }
 
-func (ite *IfdTagEntry) getValueContext() *exif.ValueContext {
-	return exif.NewValueContext(
+func (ite *IfdTagEntry) String() (string, error) {
+	valueContext := ite.getValueContext()
+	return valueContext.ReadASCII()
+}
+
+func (ite *IfdTagEntry) getValueContext() *ValueContext {
+	return NewValueContext(
 		ite.ifdPath,
 		ite.tagID,
 		ite.unitCount,
 		ite.valueOffset,
 		ite.rawValueOffset,
-		ite.addressableData,
+		ite.exifReader,
 		ite.tagType,
 		ite.byteOrder)
 }

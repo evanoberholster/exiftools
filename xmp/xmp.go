@@ -4,7 +4,6 @@ package xmp
 import (
 	"io"
 
-	"github.com/evanoberholster/exiftools/models"
 	"trimmer.io/go-xmp/models/dc"
 	xmpbase "trimmer.io/go-xmp/models/xmp_base"
 	"trimmer.io/go-xmp/xmp"
@@ -36,47 +35,34 @@ func Unmarshal(bb []byte) (*xmp.Document, error) {
 	return doc, err
 }
 
-// Base - Extract XmpBase from XMP Document
-func Base(m *xmp.Document) models.XmpBase {
-	c := xmpbase.FindModel(m)
-	if c == nil {
-		return models.XmpBase{}
+// GetBase - Extract XmpBase from XMP Document
+func GetBase(m *xmp.Document) XmpBase {
+	if c := xmpbase.FindModel(m); c != nil {
+		return XmpBase{
+			CreateDate:   c.CreateDate.Value(),
+			MetadataDate: c.MetadataDate.Value(),
+			ModifyDate:   c.ModifyDate.Value(),
+			Label:        string(c.Label),
+			Rating:       int(c.Rating),
+			CreatorTool:  c.CreatorTool.String(),
+		}
 	}
 
-	return models.XmpBase{
-		CreateDate:   c.CreateDate.Value(),
-		MetadataDate: c.MetadataDate.Value(),
-		ModifyDate:   c.ModifyDate.Value(),
-		Label:        string(c.Label),
-		Rating:       int(c.Rating),
-		CreatorTool:  c.CreatorTool.String(),
-	}
+	return XmpBase{}
 }
 
-// DublinCore - Extract DublinCore from XMP Document
-func DublinCore(m *xmp.Document) models.DublinCore {
-	c := dc.FindModel(m)
-	if c == nil {
-		return models.DublinCore{}
+// GetDublinCore - Extract DublinCore from XMP Document
+func GetDublinCore(m *xmp.Document) DublinCore {
+	if c := dc.FindModel(m); c != nil {
+		return DublinCore{
+			Creator:     []string(c.Creator),
+			Description: c.Description.Default(),
+			Format:      string(c.Format),
+			Rights:      c.Rights.Default(),
+			Source:      "",
+			Subject:     []string(c.Subject),
+			Title:       c.Title.Default(),
+		}
 	}
-
-	creator := []string(c.Creator)
-	if creator == nil {
-		creator = []string{}
-	}
-
-	subject := []string(c.Subject)
-	if subject == nil {
-		subject = []string{}
-	}
-
-	return models.DublinCore{
-		Creator:     creator,
-		Description: c.Description.Default(),
-		Format:      string(c.Format),
-		Rights:      c.Rights.Default(),
-		Source:      "",
-		Subject:     subject,
-		Title:       c.Title.Default(),
-	}
+	return DublinCore{}
 }

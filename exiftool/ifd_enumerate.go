@@ -276,16 +276,18 @@ func (ie *IfdEnumerate) parseTag(fqIfdPath string, tagPosition int, enumerator *
 	}
 	//log.PanicIf(err)
 
-	ite = newIfdTagEntry(
-		ifdPath,
-		tagID,
-		tagPosition,
-		tagType,
-		unitCount,
-		valueOffset,
-		rawValueOffset,
-		ie.exifData[ExifAddressableAreaStart:],
-		ie.byteOrder)
+	//ite = newIfdTagEntry(
+	//	ifdPath,
+	//	tagID,
+	//	tagPosition,
+	//	tagType,
+	//	unitCount,
+	//	valueOffset,
+	//	rawValueOffset,
+	//	ie.exifData[ExifAddressableAreaStart:],
+	//	ie.byteOrder)
+	ite = &IfdTagEntry{}
+	fmt.Sprintln(unitCount, valueOffset, rawValueOffset)
 
 	// If it's an IFD but not a standard one, it'll just be seen as a LONG
 	// (the standard IFD tag type), later, unless we skip it because it's

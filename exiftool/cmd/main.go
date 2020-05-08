@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/evanoberholster/exiftools/exiftool"
+	"github.com/evanoberholster/exiftools/exiftool/api"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
 	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
@@ -51,8 +52,9 @@ func main() {
 	ti.Add("IFD/Exif/CanonMKnote", mknote.CanonIfdTags)
 	ti.Add("IFD/GPS", ifd.GPSIfdTags)
 
-	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
+	res := api.NewResults()
 
+	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 		// GetTag
 		t, err := ti.Get(fqIfdPath, ite.TagID())
 		if err != nil {
@@ -66,8 +68,14 @@ func main() {
 			fmt.Printf("%s \t| Value Error: %s \n", t.Name, err.Error())
 			return nil
 		}
-		fmt.Printf("Path: %s \t| TagID: 0x%04x | %s   \t| %s ", fqIfdPath, ite.TagID(), t.Name, ite.TagType())
-		fmt.Printf("\t %s \n", value)
+		res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
+
+		fmt.Printf("Path: %s \t| TagID: 0x%04x | %s   \t| %s \n", fqIfdPath, ite.TagID(), t.Name, ite.TagType())
+		///if ite.TagID() == ifd.XMLPacket {
+		//	fmt.Println(string(value.([]byte)))
+		//} else {
+		fmt.Println(value)
+		//}
 
 		return nil
 	}
@@ -78,7 +86,21 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println("Decode Time: ", time.Since(start))
+	start = time.Now()
+	fmt.Println(res.GetTag("IFD/Exif", ifd.FNumber).String())
 
+	// Variables
+	fmt.Println(res.XMLPacket())
+	fmt.Println(res.GPSInfo())
+	fmt.Println(res.GPSTime())
+	fmt.Println(res.Copyright())
+	fmt.Println(res.Artist())
+	fmt.Println(res.Make())
+	fmt.Println(res.Model())
+	fmt.Println(res.Dimensions())
+	fmt.Println(res.DateTime())
+
+	fmt.Println("Get Time: ", time.Since(start))
 	//visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 	//	tagID := ite.TagID()
 	//	//agType := ite.TagType()

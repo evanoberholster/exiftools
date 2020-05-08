@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/2.CR2" //.jpg"
+	fname := "../../test/img/a.jpg" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -52,13 +52,16 @@ func NewMetadata(f *os.File) *Metadata {
 
 // XMP
 func (m *Metadata) xmpMetadata(f *os.File) error {
+	start := time.Now()
 	doc, err := xmp.ReadXMPDocument(f)
 	if err != nil {
 		return err
 	}
 
-	m.DublinCore = xmp.DublinCore(doc)
-	m.XmpBase = xmp.Base(doc)
+	m.DublinCore = xmp.GetDublinCore(doc)
+	m.XmpBase = xmp.GetBase(doc)
+
+	fmt.Println(time.Since(start), m.DublinCore, m.XmpBase)
 
 	return nil
 }
