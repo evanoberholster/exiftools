@@ -7,8 +7,8 @@ import (
 
 // IfdGPS Name and TagID
 const (
-	IfdGPS              = "GPS"
-	IfdGPSID exif.TagID = 0x8825
+	ifdGPS              = "GPS"
+	ifdGPSID exif.TagID = 0x8825
 )
 
 // GPSPath is the GPS Ifd Path
@@ -17,14 +17,10 @@ var (
 )
 
 // GPSIfd is the GPS IFD "IFD/GPS" for GPSInfo
-var GPSIfd = exiftool.IfdItem{GPSPath, IfdGPSID, IfdGPS}
+var GPSIfd = exiftool.IfdItem{GPSPath, ifdGPSID, ifdGPS}
 
-// GPSIfdTags is a map of the the exif.TagID to exiftool.IndexedTag
-var GPSIfdTags = map[exif.TagID]exiftool.IndexedTag{
-	GPSVersionID: {GPSVersionID, "GPSVersionID", exif.TypeShort}, // double Check
-}
-
-var GPSIfdTags2 = map[exif.TagID]exif.Tag{
+// GPSIfdTags is a map of the the exif.TagID to exif.Tag contained in the GPSInfo ifd
+var GPSIfdTags = map[exif.TagID]exif.Tag{
 	GPSVersionID:        {"GPSVersionID", exif.TypeByte},
 	GPSLatitudeRef:      {"GPSLatitudeRef", exif.TypeASCII},
 	GPSLatitude:         {"GPSLatitude", exif.TypeRational},
@@ -58,7 +54,7 @@ var GPSIfdTags2 = map[exif.TagID]exif.Tag{
 	GPSDifferential:     {"GPSDifferential", exif.TypeShort},
 }
 
-// GPSInfo Tags
+// GPSInfo Tags; GPSInfo Ifd
 const (
 	GPSVersionID        exif.TagID = 0x0000
 	GPSLatitudeRef      exif.TagID = 0x0001
@@ -92,38 +88,3 @@ const (
 	GPSDateStamp        exif.TagID = 0x001d
 	GPSDifferential     exif.TagID = 0x001e
 )
-
-// GPSInfoIfdTagNames -
-var GPSInfoIfdTagNames = map[exif.TagID]string{
-	GPSVersionID:        "GPSVersionID",
-	GPSLatitudeRef:      "GPSLatitudeRef",
-	GPSLatitude:         "GPSLatitude",
-	GPSLongitudeRef:     "GPSLongitudeRef",
-	GPSLongitude:        "GPSLongitude",
-	GPSAltitudeRef:      "GPSAltitudeRef",
-	GPSAltitude:         "GPSAltitude",
-	GPSTimeStamp:        "GPSTimeStamp",
-	GPSSatellites:       "GPSSatellites",
-	GPSStatus:           "GPSStatus",
-	GPSMeasureMode:      "GPSMeasureMode",
-	GPSDOP:              "GPSDOP",
-	GPSSpeedRef:         "GPSSpeedRef",
-	GPSSpeed:            "GPSSpeed",
-	GPSTrackRef:         "GPSTrackRef",
-	GPSTrack:            "GPSTrack",
-	GPSImgDirectionRef:  "GPSImgDirectionRef",
-	GPSImgDirection:     "GPSImgDirection",
-	GPSMapDatum:         "GPSMapDatum",
-	GPSDestLatitudeRef:  "GPSDestLatitudeRef",
-	GPSDestLatitude:     "GPSDestLatitude",
-	GPSDestLongitudeRef: "GPSDestLongitudeRef",
-	GPSDestLongitude:    "GPSDestLongitude",
-	GPSDestBearingRef:   "GPSDestBearingRef",
-	GPSDestBearing:      "GPSDestBearing",
-	GPSDestDistanceRef:  "GPSDestDistanceRef",
-	GPSDestDistance:     "GPSDestDistance",
-	GPSProcessingMethod: "GPSProcessingMethod",
-	GPSAreaInformation:  "GPSAreaInformation",
-	GPSDateStamp:        "GPSDateStamp",
-	GPSDifferential:     "GPSDifferential",
-}
