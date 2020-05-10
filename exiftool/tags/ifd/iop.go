@@ -1,7 +1,6 @@
 package ifd
 
 import (
-	"github.com/evanoberholster/exiftools/exiftool"
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
@@ -17,4 +16,4 @@ var (
 )
 
 // IopIfd is the IFD/Iop IFD for Interoperability Information
-var IopIfd = exiftool.IfdItem{IopPath, IfdIopID, IfdIop}
+var IopIfd = exif.IfdItem{IopPath, IfdIopID, IfdIop}

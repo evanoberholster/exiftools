@@ -1,8 +1,4 @@
-package exiftool
-
-import (
-	"github.com/evanoberholster/exiftools/exiftool/exif"
-)
+package exif
 
 // isEmbedded returns whether the value is embedded or a reference. This can't
 // be precalculated since the size is not defined for all types (namely the
@@ -115,7 +111,7 @@ func (vc *ValueContext) ReadLongs() (value []uint32, err error) {
 
 // ReadRationals parses the list of encoded, unsigned rationals from the value-
 // context.
-func (vc *ValueContext) ReadRationals() (value []exif.Rational, err error) {
+func (vc *ValueContext) ReadRationals() (value []Rational, err error) {
 	rawValue, err := vc.readRawEncoded2()
 	if err != nil {
 		return
@@ -136,7 +132,7 @@ func (vc *ValueContext) ReadSignedLongs() (value []int32, err error) {
 
 // ReadSignedRationals parses the list of encoded, signed rationals from the
 // value-context.
-func (vc *ValueContext) ReadSignedRationals() (value []exif.SignedRational, err error) {
+func (vc *ValueContext) ReadSignedRationals() (value []SignedRational, err error) {
 	rawValue, err := vc.readRawEncoded2()
 	if err != nil {
 		return

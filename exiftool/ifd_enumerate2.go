@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/evanoberholster/exiftools/exiftool/exif"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
+	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
 )
 
 // IfdEnumerate -
@@ -131,18 +133,24 @@ func (ie *IfdEnumerate) ParseIfd2(fqIfdPath string, ifdIndex int, enumerator *If
 		if tagID == ThumbnailOffsetTagId {
 			enumeratorThumbnailOffset = ite
 			fmt.Println("Thumbnail Offset")
-			continue
+			//continue
 		} else if tagID == ThumbnailSizeTagId {
 			enumeratorThumbnailSize = ite
-			fmt.Println("Thumbnail tagID")
-			continue
+			fmt.Println("Thumbnail Size")
+			//continue
+		}
+
+		// LoadMakernotes accoring to Make
+		if ite.TagID() == ifd.Make && fqIfdPath == ifd.IfdRoot {
+			if value, err := ite.Value(); err == nil {
+				ie.ifdMapping.LoadIfds(mknote.LoadMakerNotesIfd(value.(string)))
+			}
 		}
 
 		if visitor != nil && ite.ChildIfdPath() == "" {
 			if err := visitor(fqIfdPath, ifdIndex, ite); err != nil {
 				panic(err)
 			}
-			//log.PanicIf(err)
 		}
 
 		// If it's an IFD but not a standard one, it'll just be seen as a LONG

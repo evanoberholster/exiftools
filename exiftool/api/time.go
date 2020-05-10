@@ -2,9 +2,11 @@ package api
 
 import (
 	"fmt"
-	"time"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
+
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
 )
 
@@ -15,27 +17,46 @@ var (
 	ErrParseHour = fmt.Errorf("Error parsing Hour")
 )
 
-func (res Results) DateTime() (dateTime time.Time, err error) {
-	dateRaw, err := res.GetTag("IFD/Exif", ifdexif.DateTimeOriginal).String()
-	if err == nil || dateRaw != "" {
-		dateTime, err = parseExifFullTimestamp(dateRaw)
-		if err == nil || !dateTime.IsZero() {
+// ModifyDate - the date and time at which the Exif file was modified
+func (res Results) ModifyDate() (time.Time, error) {
+	// "IFD" DateTime
+	if dateRaw, err := res.GetTag("IFD", ifd.DateTime).String(); err == nil && dateRaw != "" {
+		// "IFD/Exif" SubSecTime
+		subSecRaw, _ := res.GetTag("IFD/Exif", ifdexif.SubSecTime).String()
+		if dateTime, err := parseExifFullTimestamp(dateRaw, subSecRaw); err == nil && !dateTime.IsZero() {
 			return dateTime, nil
 		}
 	}
-	dateRaw, err = res.GetTag("IFD/Exif", ifdexif.DateTimeDigitized).String()
-	if err == nil || dateRaw != "" {
-		dateTime, err = parseExifFullTimestamp(dateRaw)
-		if err == nil || !dateTime.IsZero() {
+	return time.Time{}, ErrEmptyTag
+}
+
+// DateTime - the date and time at which the EXIF file was created
+// with sub-second precision
+func (res Results) DateTime() (time.Time, error) {
+	// "IFD/Exif" DateTimeOriginal
+	if dateRaw, err := res.GetTag("IFD/Exif", ifdexif.DateTimeOriginal).String(); err == nil && dateRaw != "" {
+		// "IFD/Exif" SubSecTimeOriginal
+		subSecRaw, _ := res.GetTag("IFD/Exif", ifdexif.SubSecTimeOriginal).String()
+
+		if dateTime, err := parseExifFullTimestamp(dateRaw, subSecRaw); err == nil && !dateTime.IsZero() {
 			return dateTime, nil
 		}
 	}
-	return 
+
+	// "IFD/Exif" DateTimeDigitized
+	if dateRaw, err := res.GetTag("IFD/Exif", ifdexif.DateTimeDigitized).String(); err == nil && dateRaw != "" {
+		// "IFD/Exif" SubSecTimeDigitized
+		subSecRaw, _ := res.GetTag("IFD/Exif", ifdexif.SubSecTimeDigitized).String()
+		if dateTime, err := parseExifFullTimestamp(dateRaw, subSecRaw); err == nil && !dateTime.IsZero() {
+			return dateTime, nil
+		}
+	}
+	return time.Time{}, ErrEmptyTag
 }
 
 // parseExifFullTimestamp parses dates like "2018:11:30 13:01:49" into a UTC
 // `time.Time` struct.
-func parseExifFullTimestamp(fullTimestampPhrase string) (timestamp time.Time, err error) {
+func parseExifFullTimestamp(fullTimestampPhrase string, subSecString string) (timestamp time.Time, err error) {
     defer func() {
         if state := recover(); state != nil {
 			err = state.(error)
@@ -83,9 +104,14 @@ func parseExifFullTimestamp(fullTimestampPhrase string) (timestamp time.Time, er
     if err != nil {
 		err = ErrParseHour
 		return
+	}
+	
+	subSec, err := strconv.ParseUint(subSecString, 10, 16)
+    if err != nil {
+		subSec = 0
     }
 
-    timestamp = time.Date(int(year), time.Month(month), int(day), int(hour), int(minute), int(second), 0, time.UTC)
+    timestamp = time.Date(int(year), time.Month(month), int(day), int(hour), int(minute), int(second), int(subSec*1000000), time.UTC)
     return timestamp, nil
 }
 

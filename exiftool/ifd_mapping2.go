@@ -11,16 +11,20 @@ var (
 )
 
 // LoadIfds loads ifdItems in the IfdMapping
-func (im *IfdMapping) LoadIfds(ifdItem IfdItem) (*IfdMapping, error) {
+func (im *IfdMapping) LoadIfds(ifds ...exif.IfdItem) (*IfdMapping, error) {
 	var err error
-	err = im.addIfdItem(ifdItem)
+	for _, item := range ifds {
+		if err = im.addIfdItem(item); err != nil {
+			panic(err)
+		}
+	}
 	// add IFD
 	//im.addIfd()
 	return im, err
 }
 
 //func (im *IfdMapping) addIfdItem(ifdPath exif.IfdPath, ifdPointer exif.TagID, name string) (err error) {
-func (im *IfdMapping) addIfdItem(ifd IfdItem) (err error) {
+func (im *IfdMapping) addIfdItem(ifd exif.IfdItem) (err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,34 +9,9 @@ import (
 	"github.com/golang/geo/s2"
 )
 
-var (
-	// ErrGpsCoordsNotValid means that some part of the geographic data were unparseable.
-	ErrGpsCoordsNotValid = errors.New("GPS coordinates not valid")
-)
-
-// GpsDegrees is a high-level struct representing geographic data.
-type GpsDegrees struct {
-	// Orientation describes the N/E/S/W direction that this position is
-	// relative to.
-	Orientation byte
-
-	// Degrees is a simple float representing the underlying rational degrees
-	// amount.
-	Degrees float64
-
-	// Minutes is a simple float representing the underlying rational minutes
-	// amount.
-	Minutes float64
-
-	// Seconds is a simple float representing the underlying ration seconds
-	// amount.
-	Seconds float64
-}
-
-// NewGpsDegreesFromRationals returns a GpsDegrees struct given the EXIF-encoded
-// information. The refValue is the N/E/S/W direction that this position is
-// relative to.
-func NewGpsDegreesFromRationals(refValue string, rawCoordinate []exif.Rational) (gd GpsDegrees, err error) {
+// gpsCoordsFromRationals returns a decimal given the EXIF-encoded information.
+// The refValue is the N/E/S/W direction that this position is relative to.
+func gpsCoordsFromRationals(refValue string, rawCoordinate []exif.Rational) (decimal float64, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
@@ -45,48 +19,25 @@ func NewGpsDegreesFromRationals(refValue string, rawCoordinate []exif.Rational) 
 	}()
 
 	if len(rawCoordinate) != 3 {
-		err = fmt.Errorf("new GpsDegrees struct requires a raw-coordinate with exactly three rationals")
+		err = fmt.Errorf("new GPS Coords requires a raw-coordinate with exactly three rationals")
+		return
 	}
 
-	gd = GpsDegrees{
-		Orientation: refValue[0],
-		Degrees:     float64(rawCoordinate[0].Numerator) / float64(rawCoordinate[0].Denominator),
-		Minutes:     float64(rawCoordinate[1].Numerator) / float64(rawCoordinate[1].Denominator),
-		Seconds:     float64(rawCoordinate[2].Numerator) / float64(rawCoordinate[2].Denominator),
+	decimal = (float64(rawCoordinate[0].Numerator) / float64(rawCoordinate[0].Denominator))
+	decimal += (float64(rawCoordinate[1].Numerator) / float64(rawCoordinate[1].Denominator) / 60.0)
+	decimal += (float64(rawCoordinate[2].Numerator) / float64(rawCoordinate[2].Denominator) / 3600.0)
+
+	// Decimal is a negative value for a South or West Orientation
+	if refValue[0] == 'S' || refValue[0] == 'W' {
+		decimal = -decimal
+		return
 	}
-
-	return gd, nil
-}
-
-// String provides returns a descriptive string.
-func (d GpsDegrees) String() string {
-	return fmt.Sprintf("Degrees<O=[%s] D=(%g) M=(%g) S=(%g)>", string([]byte{d.Orientation}), d.Degrees, d.Minutes, d.Seconds)
-}
-
-// Decimal calculates and returns the simplified float representation of the component degrees.
-func (d GpsDegrees) Decimal() float64 {
-	decimal := float64(d.Degrees) + float64(d.Minutes)/60.0 + float64(d.Seconds)/3600.0
-
-	if d.Orientation == 'S' || d.Orientation == 'W' {
-		return -decimal
-	}
-	return decimal
-}
-
-// Raw returns a Rational struct that can be used to *write* coordinates. In
-// practice, the denominator are typically (1) in the original EXIF data, and,
-// that being the case, this will best preserve precision.
-func (d GpsDegrees) Raw() []exif.Rational {
-	return []exif.Rational{
-		{Numerator: uint32(d.Degrees), Denominator: 1},
-		{Numerator: uint32(d.Minutes), Denominator: 1},
-		{Numerator: uint32(d.Seconds), Denominator: 1},
-	}
+	return
 }
 
 // GpsInfo encapsulates all of the geographic information in one place.
 type GpsInfo struct {
-	Latitude, Longitude GpsDegrees
+	Latitude, Longitude float64
 	Altitude            int
 	Timestamp           time.Time
 }
@@ -94,63 +45,76 @@ type GpsInfo struct {
 // String returns a descriptive string.
 func (gi *GpsInfo) String() string {
 	return fmt.Sprintf("GpsInfo | LAT=(%.05f) LON=(%.05f) ALT=(%d) TIME=[%s] |",
-		gi.Latitude.Decimal(), gi.Longitude.Decimal(), gi.Altitude, gi.Timestamp)
+		gi.Latitude, gi.Longitude, gi.Altitude, gi.Timestamp)
 }
 
-// S2CellId returns the cell-ID of the geographic location on the earth.
-func (gi *GpsInfo) S2CellId() s2.CellID {
-	latitude := gi.Latitude.Decimal()
-	longitude := gi.Longitude.Decimal()
-
-	ll := s2.LatLngFromDegrees(latitude, longitude)
-	cellId := s2.CellIDFromLatLng(ll)
-
-	if !cellId.IsValid() {
-		panic(ErrGpsCoordsNotValid)
-	}
-
-	return cellId
-}
-
-func (res Results) GPSInfo() (lat, lng float64, err error) {
+// S2CellID returns the cell-ID of the geographic location on the earth.
+func (gi *GpsInfo) S2CellID() (cellID s2.CellID, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
 		}
 	}()
 
+	latLng := s2.LatLngFromDegrees(gi.Latitude, gi.Longitude)
+	cellID = s2.CellIDFromLatLng(latLng)
+
+	if !cellID.IsValid() {
+		panic(ErrGpsCoordsNotValid)
+	}
+
+	return cellID, nil
+}
+
+// GPSInfo convenience func. "IFD/GPS" GPSLatitude and GPSLongitude
+func (res Results) GPSInfo() (lat, lng float64, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = state.(error)
+		}
+	}()
+	var ref string
+	var raw []exif.Rational
+
 	// Latitude
-	latRef, err := res.GetTag("IFD/GPS", ifd.GPSLatitudeRef).String()
+	ref, err = res.GetTag("IFD/GPS", ifd.GPSLatitudeRef).String()
 	if err != nil {
 		return
 	}
-	latRaw := res.GetTag("IFD/GPS", ifd.GPSLatitude).Rational()
+	raw, err = res.GetTag("IFD/GPS", ifd.GPSLatitude).Rational()
+	if err != nil {
+		return
+	}
 
-	latGd, err := NewGpsDegreesFromRationals(latRef, latRaw)
+	lat, err = gpsCoordsFromRationals(ref, raw)
 	if err != nil {
 		return
 	}
 
 	// Longitude
-	lngRef, err := res.GetTag("IFD/GPS", ifd.GPSLongitudeRef).String()
+	ref, err = res.GetTag("IFD/GPS", ifd.GPSLongitudeRef).String()
 	if err != nil {
 		return
 	}
-	lngRaw := res.GetTag("IFD/GPS", ifd.GPSLongitude).Rational()
-	lngGd, err := NewGpsDegreesFromRationals(lngRef, lngRaw)
+	raw, err = res.GetTag("IFD/GPS", ifd.GPSLongitude).Rational()
+	if err != nil {
+		return
+	}
+	lng, err = gpsCoordsFromRationals(ref, raw)
 	if err != nil {
 		return
 	}
 
-	return latGd.Decimal(), lngGd.Decimal(), nil
+	return
 }
 
+// GPSTime convenience func. "IFD/GPS" GPSDateStamp and GPSTimeStamp
 func (res Results) GPSTime() (timestamp time.Time, err error) {
 	dateRaw, err := res.GetTag("IFD/GPS", ifd.GPSDateStamp).String()
 	if err != nil {
 		return
 	}
-	timeRaw := res.GetTag("IFD/GPS", ifd.GPSTimeStamp).Rational()
+	timeRaw, err := res.GetTag("IFD/GPS", ifd.GPSTimeStamp).Rational()
 	if err != nil {
 		return
 	}

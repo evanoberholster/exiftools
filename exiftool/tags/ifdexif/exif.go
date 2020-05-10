@@ -1,7 +1,6 @@
 package ifdexif
 
 import (
-	"github.com/evanoberholster/exiftools/exiftool"
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 )
@@ -18,7 +17,7 @@ var (
 )
 
 // ExifIfd is the IFD/Exif IFD for ExifData
-var ExifIfd = exiftool.IfdItem{ExifPath, IfdExifID, IfdExif}
+var ExifIfd = exif.IfdItem{ExifPath, IfdExifID, IfdExif}
 
 // ExifIfdTags is a map of the the exif.TagID to exif.Tag for "IFD/Exif"
 var ExifIfdTags = map[exif.TagID]exif.Tag{

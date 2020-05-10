@@ -1,7 +1,6 @@
 package ifd
 
 import (
-	"github.com/evanoberholster/exiftools/exiftool"
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
@@ -17,7 +16,7 @@ var (
 )
 
 // GPSIfd is the GPS IFD "IFD/GPS" for GPSInfo
-var GPSIfd = exiftool.IfdItem{GPSPath, ifdGPSID, ifdGPS}
+var GPSIfd = exif.IfdItem{GPSPath, ifdGPSID, ifdGPS}
 
 // GPSIfdTags is a map of the the exif.TagID to exif.Tag contained in the GPSInfo ifd
 var GPSIfdTags = map[exif.TagID]exif.Tag{

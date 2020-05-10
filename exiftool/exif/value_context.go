@@ -1,10 +1,9 @@
-package exiftool
+package exif
 
 import (
 	"encoding/binary"
 	"fmt"
-
-	"github.com/evanoberholster/exiftools/exiftool/exif"
+	"io"
 )
 
 // ValueContext embeds all of the parameters required to find and extract the
@@ -14,22 +13,22 @@ type ValueContext struct {
 	valueOffset    uint32
 	rawValueOffset []byte
 
-	exifReader      *ExifReader
+	exifReader      io.ReaderAt
 	addressableData []byte
 
-	tagType   exif.TagType
+	tagType   TagType
 	byteOrder binary.ByteOrder
 
 	// undefinedValueTagType is the effective type to use if this is an
 	// "undefined" value.
-	undefinedValueTagType exif.TagType
+	undefinedValueTagType TagType
 
 	ifdPath string
-	tagID   exif.TagID
+	tagID   TagID
 }
 
 // NewValueContext returns a new ValueContext struct.
-func NewValueContext(ifdPath string, tagID exif.TagID, unitCount, valueOffset uint32, rawValueOffset []byte, exifReader *ExifReader, tagType exif.TagType, byteOrder binary.ByteOrder) *ValueContext {
+func NewValueContext(ifdPath string, tagID TagID, unitCount, valueOffset uint32, rawValueOffset []byte, exifReader io.ReaderAt, tagType TagType, byteOrder binary.ByteOrder) *ValueContext {
 	return &ValueContext{
 		unitCount:      unitCount,
 		valueOffset:    valueOffset,
@@ -46,8 +45,8 @@ func NewValueContext(ifdPath string, tagID exif.TagID, unitCount, valueOffset ui
 
 // effectiveValueType returns the effective type of the unknown-type tag or, if
 // not unknown, the actual type.
-func (vc *ValueContext) effectiveValueType() (tagType exif.TagType) {
-	if vc.tagType == exif.TypeUndefined {
+func (vc *ValueContext) effectiveValueType() (tagType TagType) {
+	if vc.tagType == TypeUndefined {
 		tagType = vc.undefinedValueTagType
 
 		if tagType == 0 {
@@ -69,26 +68,33 @@ func (vc *ValueContext) effectiveValueType() (tagType exif.TagType) {
 func (vc *ValueContext) Values() (values interface{}, err error) {
 
 	switch vc.tagType {
-	case exif.TypeByte:
+	case TypeByte:
 		return vc.ReadBytes()
-	case exif.TypeASCII:
+	case TypeASCII:
 		return vc.ReadASCII()
-	case exif.TypeASCIINoNul:
+	case TypeASCIINoNul:
 		return vc.ReadASCIINoNul()
-	case exif.TypeLong:
+	case TypeLong:
 		return vc.ReadLongs()
-	case exif.TypeShort:
+	case TypeShort:
 		return vc.ReadShorts()
-	case exif.TypeRational:
+	case TypeRational:
 		return vc.ReadRationals()
-	case exif.TypeSignedLong:
+	case TypeSignedLong:
 		return vc.ReadSignedLongs()
-	case exif.TypeSignedRational:
+	case TypeSignedRational:
 		return vc.ReadSignedRationals()
-	case exif.TypeUndefined:
+	case TypeUndefined:
 		return nil, fmt.Errorf("Will not parse undefined-type value")
 	default:
 		return nil, fmt.Errorf("Value of type [%s] is unparseable", vc.tagType)
 	}
 
+}
+
+type DecoderFn func(reader io.ReaderAt, offset uint32, unitCount uint32, byteOrder binary.ByteOrder) (interface{}, error)
+
+func (vc *ValueContext) ValuesFn(fn DecoderFn) (values interface{}, err error) {
+
+	return fn(vc.exifReader, vc.valueOffset, vc.unitCount, vc.byteOrder)
 }

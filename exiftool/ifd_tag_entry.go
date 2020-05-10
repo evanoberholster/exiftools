@@ -105,6 +105,12 @@ func (ite *IfdTagEntry) Value() (value interface{}, err error) {
 
 	valueContext := ite.getValueContext()
 
+	// Lookup Makernote decode function
+	//path := strings.Split(ite.ifdPath, "/")
+	//if ite.tagID == mknote.CanonCameraSettings && path[len(path)-1] == "Makernotes.Canon" {
+	//	return valueContext.ValuesFn(mknote.ParseSignedInts)
+	//}
+
 	if ite.tagType == exif.TypeUndefined {
 		//var err error
 
@@ -131,8 +137,8 @@ func (ite *IfdTagEntry) String() (string, error) {
 	return valueContext.ReadASCII()
 }
 
-func (ite *IfdTagEntry) getValueContext() *ValueContext {
-	return NewValueContext(
+func (ite *IfdTagEntry) getValueContext() *exif.ValueContext {
+	return exif.NewValueContext(
 		ite.ifdPath,
 		ite.tagID,
 		ite.unitCount,

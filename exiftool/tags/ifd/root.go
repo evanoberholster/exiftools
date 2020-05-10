@@ -1,7 +1,6 @@
 package ifd
 
 import (
-	"github.com/evanoberholster/exiftools/exiftool"
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
@@ -17,7 +16,7 @@ var (
 )
 
 // RootIfd is the Root IFD "IFD0" for ExifData
-var RootIfd = exiftool.IfdItem{RootPath, IfdRootID, IfdRoot}
+var RootIfd = exif.IfdItem{RootPath, IfdRootID, IfdRoot}
 
 // RootIfdTags is a map of the the exif.TagID to exif.Tag for "IFD"
 var RootIfdTags = map[exif.TagID]exif.Tag{

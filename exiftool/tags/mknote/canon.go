@@ -1,19 +1,18 @@
 package mknote
 
 import (
-	"github.com/evanoberholster/exiftools/exiftool"
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
 // Makernote Name
 const (
-	IfdCanonMakernote = "CanonMKnote"
+	IfdCanonMakernote = "Makernotes.Canon"
 )
 
-// CanonMakernoteIfd is the Makernote IFD "IFD/CanonMKnote" for Canon Cameras
-var CanonMakernoteIfd = exiftool.IfdItem{MakernotePath, IfdMakernoteID, IfdCanonMakernote}
+// CanonMakernoteIfd is the Makernote IFD "IFD/Exif/Makernotes" for Canon Cameras
+var CanonMakernoteIfd = exif.IfdItem{MakernotePath, IfdMakernoteID, IfdCanonMakernote}
 
-// CanonIfdTags is a map of the the exif.TagID to exif.Tag for "IFD/Exif/CanonMKnote"
+// CanonIfdTags is a map of the the exif.TagID to exif.Tag for "IFD/Exif/MakerNotes.Canon"
 // Source: https://exiftool.org/TagNames/Canon.html on 8/05/2020
 var CanonIfdTags = map[exif.TagID]exif.Tag{
 	CanonCameraSettings:     {"CanonCameraSettings", exif.TypeShort},
