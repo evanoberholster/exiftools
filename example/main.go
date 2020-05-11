@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"time"
@@ -18,7 +17,7 @@ import (
 )
 
 func main() {
-	fname := "../../test/img/a.jpg" //.jpg"
+	fname := "../../test/img/b1.CR2" //.jpg"
 
 	f, err := os.Open(fname)
 	if err != nil {
@@ -128,8 +127,8 @@ func (m *Metadata) exifMetadata(f *os.File) error {
 	//m.CanonRaw = *cr
 	//fmt.Println(x.Get(mknote.CanonFileInfo))
 
-	a, _ := json.Marshal(m)
-	ioutil.WriteFile("m.json", []byte(a), 0644)
+	//a, _ := json.Marshal(m)
+	//ioutil.WriteFile("m.json", []byte(a), 0644)
 
 	return nil
 }

@@ -18,8 +18,7 @@ func (im *IfdMapping) LoadIfds(ifds ...exif.IfdItem) (*IfdMapping, error) {
 			panic(err)
 		}
 	}
-	// add IFD
-	//im.addIfd()
+
 	return im, err
 }
 
@@ -53,7 +52,7 @@ func (im *IfdMapping) addIfdItem(ifd exif.IfdItem) (err error) {
 	}
 	placement[len(placement)-1] = ifd.TagID
 
-	fmt.Println(ifd.Name, path, ifd.IfdPath, ifd.TagID)
+	//fmt.Println(ifd.Name, path, ifd.IfdPath, ifd.TagID)
 	childIfd := &MappedIfd{
 		ParentTagID: ptr.TagID,
 		Path:        path,

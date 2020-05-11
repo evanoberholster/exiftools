@@ -10,27 +10,27 @@ func (vc *ValueContext) isEmbedded() bool {
 }
 
 // readRawEncoded returns the encoded bytes for the value that we represent.
+//func (vc *ValueContext) readRawEncoded() (rawBytes []byte, err error) {
+//	defer func() {
+//		if state := recover(); state != nil {
+//			err = state.(error)
+//		}
+//	}()
+//
+//	tagType := vc.effectiveValueType()
+//
+//	unitSizeRaw := uint32(tagType.Size())
+//
+//	if vc.isEmbedded() {
+//		byteLength := unitSizeRaw * vc.unitCount
+//		return vc.rawValueOffset[:byteLength], nil
+//	}
+//	//fmt.Println(vc.valueOffset, vc.valueOffset+vc.unitCount*unitSizeRaw)
+//	return vc.addressableData[vc.valueOffset : vc.valueOffset+vc.unitCount*unitSizeRaw], nil
+//}
+
+// readRawEncoded returns the encoded bytes for the value that we represent.
 func (vc *ValueContext) readRawEncoded() (rawBytes []byte, err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = state.(error)
-		}
-	}()
-
-	tagType := vc.effectiveValueType()
-
-	unitSizeRaw := uint32(tagType.Size())
-
-	if vc.isEmbedded() {
-		byteLength := unitSizeRaw * vc.unitCount
-		return vc.rawValueOffset[:byteLength], nil
-	}
-	//fmt.Println(vc.valueOffset, vc.valueOffset+vc.unitCount*unitSizeRaw)
-	return vc.addressableData[vc.valueOffset : vc.valueOffset+vc.unitCount*unitSizeRaw], nil
-}
-
-// readRawEncoded2 returns the encoded bytes for the value that we represent.
-func (vc *ValueContext) readRawEncoded2() (rawBytes []byte, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
@@ -59,7 +59,7 @@ func (vc *ValueContext) readRawEncoded2() (rawBytes []byte, err error) {
 
 // ReadBytes parses the encoded byte-array from the value-context.
 func (vc *ValueContext) ReadBytes() (value []byte, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -70,7 +70,7 @@ func (vc *ValueContext) ReadBytes() (value []byte, err error) {
 // ReadASCII parses the encoded NUL-terminated ASCII string from the value-
 // context.
 func (vc *ValueContext) ReadASCII() (value string, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -81,7 +81,7 @@ func (vc *ValueContext) ReadASCII() (value string, err error) {
 // ReadASCIINoNul parses the non-NUL-terminated encoded ASCII string from the
 // value-context.
 func (vc *ValueContext) ReadASCIINoNul() (value string, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -91,7 +91,7 @@ func (vc *ValueContext) ReadASCIINoNul() (value string, err error) {
 
 // ReadShorts parses the list of encoded shorts from the value-context.
 func (vc *ValueContext) ReadShorts() (value []uint16, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -101,7 +101,7 @@ func (vc *ValueContext) ReadShorts() (value []uint16, err error) {
 
 // ReadLongs parses the list of encoded, unsigned longs from the value-context.
 func (vc *ValueContext) ReadLongs() (value []uint32, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -112,7 +112,7 @@ func (vc *ValueContext) ReadLongs() (value []uint32, err error) {
 // ReadRationals parses the list of encoded, unsigned rationals from the value-
 // context.
 func (vc *ValueContext) ReadRationals() (value []Rational, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -122,7 +122,7 @@ func (vc *ValueContext) ReadRationals() (value []Rational, err error) {
 
 // ReadSignedLongs parses the list of encoded, signed longs from the value-context.
 func (vc *ValueContext) ReadSignedLongs() (value []int32, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}
@@ -133,7 +133,7 @@ func (vc *ValueContext) ReadSignedLongs() (value []int32, err error) {
 // ReadSignedRationals parses the list of encoded, signed rationals from the
 // value-context.
 func (vc *ValueContext) ReadSignedRationals() (value []SignedRational, err error) {
-	rawValue, err := vc.readRawEncoded2()
+	rawValue, err := vc.readRawEncoded()
 	if err != nil {
 		return
 	}

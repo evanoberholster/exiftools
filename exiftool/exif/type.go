@@ -53,6 +53,18 @@ func (tagType TagType) IsValid() bool {
 		tagType == TypeUndefined
 }
 
+// Tag sizes
+const (
+	TypeByteSize           = 1
+	TypeASCIISize          = 1
+	TypeASCIINoNulSize     = 1
+	TypeShortSize          = 2
+	TypeLongSize           = 4
+	TypeRationalSize       = 8
+	TypeSignedLongSize     = 4
+	TypeSignedRationalSize = 8
+)
+
 // Size returns the size of one atomic unit of the type.
 func (tagType TagType) Size() int {
 	switch tagType {

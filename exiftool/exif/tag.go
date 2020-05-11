@@ -12,4 +12,5 @@ type Tag struct {
 	Type TagType
 }
 
+// TagMap - is a lookupmap for Tags using their TagID
 type TagMap map[TagID]Tag

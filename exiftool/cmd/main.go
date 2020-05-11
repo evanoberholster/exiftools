@@ -21,6 +21,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	begin := time.Now()
 
 	start := time.Now()
 	eh, err := exiftool.ParseExif(f)
@@ -114,6 +115,7 @@ func main() {
 	fmt.Println(res.CanonAFInfo())
 
 	fmt.Println("Get Time: ", time.Since(start))
+	fmt.Println("Total Time: ", time.Since(begin))
 	//visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 	//	tagID := ite.TagID()
 	//	//agType := ite.TagType()

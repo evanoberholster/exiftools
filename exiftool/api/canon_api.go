@@ -26,7 +26,7 @@ type CanonCameraSettings struct {
 	//FocalUnits        int16                       // [25]
 	//FocusContinuous   mknote.CanonFocusContinous  // [32]
 	//SpotMeteringMode  bool                        // [39]
-	//AESetting         mknote.CanonAESetting       // [33]
+	AESetting mknote.CanonAESetting // [33]
 }
 
 // CanonShotInfo - Canon Makernote Shot Information
@@ -74,6 +74,7 @@ func (res Results) CanonCameraSettings() (CanonCameraSettings, error) {
 		MeteringMode:      mknote.CanonMeteringMode(ii[17]),
 		FocusRange:        mknote.CanonFocusRange(ii[18]),
 		CanonExposureMode: mknote.CanonExposureMode(ii[20]),
+		AESetting:         mknote.CanonAESetting(ii[33]),
 	}, nil
 }
 

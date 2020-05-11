@@ -13,8 +13,8 @@ type ValueContext struct {
 	valueOffset    uint32
 	rawValueOffset []byte
 
-	exifReader      io.ReaderAt
-	addressableData []byte
+	exifReader io.ReaderAt
+	//addressableData []byte
 
 	tagType   TagType
 	byteOrder binary.ByteOrder
@@ -66,7 +66,6 @@ func (vc *ValueContext) effectiveValueType() (tagType TagType) {
 // byte-order, tag-ID, IFD type), it will return an error if attempted. See
 // `Undefined()`.
 func (vc *ValueContext) Values() (values interface{}, err error) {
-
 	switch vc.tagType {
 	case TypeByte:
 		return vc.ReadBytes()
@@ -92,6 +91,7 @@ func (vc *ValueContext) Values() (values interface{}, err error) {
 
 }
 
+// WIP - Evan O.
 type DecoderFn func(reader io.ReaderAt, offset uint32, unitCount uint32, byteOrder binary.ByteOrder) (interface{}, error)
 
 func (vc *ValueContext) ValuesFn(fn DecoderFn) (values interface{}, err error) {

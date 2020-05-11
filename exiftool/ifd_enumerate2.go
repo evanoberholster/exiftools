@@ -6,8 +6,6 @@ import (
 	"fmt"
 
 	"github.com/evanoberholster/exiftools/exiftool/exif"
-	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
-	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
 )
 
 // IfdEnumerate -
@@ -132,20 +130,20 @@ func (ie *IfdEnumerate) ParseIfd2(fqIfdPath string, ifdIndex int, enumerator *If
 		tagID := ite.TagID()
 		if tagID == ThumbnailOffsetTagId {
 			enumeratorThumbnailOffset = ite
-			fmt.Println("Thumbnail Offset")
+			//fmt.Println("Thumbnail Offset")
 			//continue
 		} else if tagID == ThumbnailSizeTagId {
 			enumeratorThumbnailSize = ite
-			fmt.Println("Thumbnail Size")
+			//fmt.Println("Thumbnail Size")
 			//continue
 		}
 
 		// LoadMakernotes accoring to Make
-		if ite.TagID() == ifd.Make && fqIfdPath == ifd.IfdRoot {
-			if value, err := ite.Value(); err == nil {
-				ie.ifdMapping.LoadIfds(mknote.LoadMakerNotesIfd(value.(string)))
-			}
-		}
+		//if ite.TagID() == ifd.Make && fqIfdPath == ifd.IfdRoot {
+		//	if value, err := ite.Value(); err == nil {
+		//		ie.ifdMapping.LoadIfds(mknote.LoadMakernotesIfd(value.(string)))
+		//	}
+		//}
 
 		if visitor != nil && ite.ChildIfdPath() == "" {
 			if err := visitor(fqIfdPath, ifdIndex, ite); err != nil {

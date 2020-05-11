@@ -8,6 +8,7 @@ import (
 // IfdExif Name and TagID
 const (
 	IfdExif              = "Exif"
+	FqIfdExif            = "IFD/Exif"
 	IfdExifID exif.TagID = 0x8769
 )
 

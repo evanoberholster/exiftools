@@ -22,7 +22,7 @@ func (res Results) CameraMake() (make string, err error) {
 
 // LensMake convenience func. "IFD/Exif" LensMake
 func (res Results) LensMake() (make string, err error) {
-	return res.GetTag("IFD/Exif", ifdexif.LensMake).String()
+	return res.GetTag(ifdexif.FqIfdExif, ifdexif.LensMake).String()
 }
 
 // CameraModel convenience func. "IFD" Model
@@ -32,13 +32,13 @@ func (res Results) CameraModel() (model string, err error) {
 
 // LensModel convenience func. "IFD/Exif" LensModel
 func (res Results) LensModel() (model string, err error) {
-	return res.GetTag("IFD/Exif", ifdexif.LensModel).String()
+	return res.GetTag(ifdexif.FqIfdExif, ifdexif.LensModel).String()
 }
 
 // CameraSerial convenience func. "IFD/Exif" BodySerialNumber
 func (res Results) CameraSerial() (serial string, err error) {
 	// BodySerialNumber
-	if serial, err = res.GetTag("IFD/Exif", ifdexif.BodySerialNumber).String(); err == nil && serial != "" {
+	if serial, err = res.GetTag(ifdexif.FqIfdExif, ifdexif.BodySerialNumber).String(); err == nil && serial != "" {
 		return
 	}
 
@@ -48,14 +48,14 @@ func (res Results) CameraSerial() (serial string, err error) {
 
 // LensSerial convenience func. "IFD/Exif" LensSerialNumber
 func (res Results) LensSerial() (serial string, err error) {
-	return res.GetTag("IFD/Exif", ifdexif.LensSerialNumber).String()
+	return res.GetTag(ifdexif.FqIfdExif, ifdexif.LensSerialNumber).String()
 }
 
 // Dimensions convenience func. "IFD" Dimensions
 func (res Results) Dimensions() (width, height int, err error) {
-	width, err = res.GetTag("IFD/Exif", ifdexif.PixelXDimension).Int()
+	width, err = res.GetTag(ifdexif.FqIfdExif, ifdexif.PixelXDimension).Int()
 	if err == nil {
-		height, err = res.GetTag("IFD/Exif", ifdexif.PixelYDimension).Int()
+		height, err = res.GetTag(ifdexif.FqIfdExif, ifdexif.PixelYDimension).Int()
 		if err == nil {
 			return width, height, err
 		}
@@ -74,13 +74,13 @@ func (res Results) Dimensions() (width, height int, err error) {
 
 // ExposureProgram convenience func. "IFD/Exif" ExposureProgram
 func (res Results) ExposureProgram() (ExposureMode, error) {
-	ep, err := res.GetTag("IFD/Exif", ifdexif.ExposureProgram).Int()
+	ep, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.ExposureProgram).Int()
 	return ExposureMode(ep), err
 }
 
 // MeteringMode convenience func. "IFD/Exif" MeteringMode
 func (res Results) MeteringMode() (MeteringMode, error) {
-	mm, err := res.GetTag("IFD/Exif", ifdexif.MeteringMode).Int()
+	mm, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.MeteringMode).Int()
 	return MeteringMode(mm), err
 }
 
@@ -94,7 +94,7 @@ func (res Results) ExposureBiasValue() (string, error) {
 func (res Results) ShutterSpeed() (ShutterSpeed, error) {
 	// ShutterSpeedValue
 	// ExposureTime
-	et, err := res.GetTag("IFD/Exif", ifdexif.ExposureTime).Rational()
+	et, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.ExposureTime).Rational()
 	return ShutterSpeed{int(et[0].Numerator), int(et[0].Denominator)}, err
 }
 
@@ -102,7 +102,7 @@ func (res Results) ShutterSpeed() (ShutterSpeed, error) {
 func (res Results) Aperture() (float32, error) {
 	// ApertureValue
 	// FNumber
-	fn, err := res.GetTag("IFD/Exif", ifdexif.FNumber).Rational()
+	fn, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.FNumber).Rational()
 	return float32(fn[0].Numerator) / float32(fn[0].Denominator), err
 }
 
@@ -110,7 +110,7 @@ func (res Results) Aperture() (float32, error) {
 // Lens Focal Length in mm
 func (res Results) FocalLength() (FocalLength, error) {
 	// FocalLength
-	fn, err := res.GetTag("IFD/Exif", ifdexif.FocalLength).Rational()
+	fn, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.FocalLength).Rational()
 	return FocalLength(float32(fn[0].Numerator) / float32(fn[0].Denominator)), err
 }
 
@@ -118,19 +118,19 @@ func (res Results) FocalLength() (FocalLength, error) {
 // Lens Focal Length Equivalent for 35mm sensor in mm
 func (res Results) FocalLengthIn35mmFilm() (FocalLength, error) {
 	// FocalLengthIn35mmFilm
-	fn, err := res.GetTag("IFD/Exif", ifdexif.FocalLengthIn35mmFilm).Int()
+	fn, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.FocalLengthIn35mmFilm).Int()
 	return FocalLength(fn), err
 }
 
 // ISOSpeed convenience func. "IFD/Exif" ISOSpeed
 func (res Results) ISOSpeed() (int, error) {
-	iso, err := res.GetTag("IFD/Exif", ifdexif.ISOSpeedRatings).Int()
+	iso, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.ISOSpeedRatings).Int()
 	return iso, err
 }
 
 // Flash convenience func. "IFD/Exif" Flash
 func (res Results) Flash() (FlashMode, error) {
-	f, err := res.GetTag("IFD/Exif", ifdexif.Flash).Int()
+	f, err := res.GetTag(ifdexif.FqIfdExif, ifdexif.Flash).Int()
 	return FlashMode(f), err
 }
 

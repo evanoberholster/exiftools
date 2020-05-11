@@ -20,14 +20,15 @@ var (
 // MakernoteIfd is the Makernote IFD "IFD/MakerNote" for Makernote
 var MakernoteIfd = exif.IfdItem{MakernotePath, IfdMakernoteID, IfdMakernote}
 
-func LoadMakerNotesIfd(make string) exif.IfdItem {
-	if mknoteIfd, ok := mknoteIfdMap[make]; ok {
+// LoadMakernotesIfd - returns the exif.IfdItem for the Make of the Camera
+func LoadMakernotesIfd(make string) exif.IfdItem {
+	if mknoteIfd, ok := mknoteRegistry[make]; ok {
 		return mknoteIfd
 	}
 	return exif.IfdItem{}
 }
 
 // Makernote registry
-var mknoteIfdMap = map[string]exif.IfdItem{
+var mknoteRegistry = map[string]exif.IfdItem{
 	"Canon": CanonMakernoteIfd,
 }

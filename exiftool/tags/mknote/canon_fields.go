@@ -125,6 +125,17 @@ var mapCanonBracketMode = map[CanonBracketMode]string{
 	4: "WB",
 }
 
+// CanonAESetting - Canon Makernote AutoExposure Setting
+type CanonAESetting int16
+
+var mapCanonAESetting = map[CanonAESetting]string{
+	0: "Normal AE",
+	1: "Exposure Compensation",
+	2: "AE Lock",
+	3: "AE Lock + Exposure Compensation",
+	4: "No AE",
+}
+
 type CanonAFAreaMode int16
 
 func (caf CanonAFAreaMode) String() string {

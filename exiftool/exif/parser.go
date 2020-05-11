@@ -21,6 +21,8 @@ var (
 	ErrUnparseableValue = errors.New("unparseable undefined tag")
 )
 
+// TODO: create Parser with io.Reader
+
 var (
 	parser *Parser
 )
