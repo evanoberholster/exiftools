@@ -14,6 +14,7 @@ func NewIfdMapping() (ifdMapping *IfdMapping) {
 	}
 }
 
+// MappedIfd -
 type MappedIfd struct {
 	ParentTagID exif.TagID
 	Placement   exif.IfdPath

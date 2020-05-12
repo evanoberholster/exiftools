@@ -1,7 +1,7 @@
 package exif
 
 import (
-	"log"
+	"fmt"
 )
 
 // TagType -
@@ -69,21 +69,21 @@ const (
 func (tagType TagType) Size() int {
 	switch tagType {
 	case TypeByte:
-		return 1
+		return TypeByteSize
 	case TypeASCII, TypeASCIINoNul:
-		return 1
+		return TypeASCIISize
 	case TypeShort:
-		return 2
+		return TypeShortSize
 	case TypeLong:
-		return 4
+		return TypeLongSize
 	case TypeRational:
-		return 8
+		return TypeRationalSize
 	case TypeSignedLong:
-		return 4
+		return TypeSignedLongSize
 	case TypeSignedRational:
-		return 8
+		return TypeSignedRationalSize
 	default:
-		log.Panicf("Can not determine tag-value size for type (%d): [%s]", tagType, tagType.String())
+		panic(fmt.Errorf("Can not determine tag-value size for type (%d): [%s]", tagType, tagType.String()))
 		return 0
 	}
 }

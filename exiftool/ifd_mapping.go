@@ -115,15 +115,12 @@ func (im *IfdMapping) GetChild(parentPathPhrase string, tagID exif.TagID) (mi *M
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
-			//err = log.Wrap(state.(error))
 		}
 	}()
 
-	mi, err = im.GetWithPath(parentPathPhrase)
-	if err != nil {
-		panic(err)
+	if mi, err = im.GetWithPath(parentPathPhrase); err != nil {
+		return nil, fmt.Errorf("GetChild Error: %s %w", parentPathPhrase, err)
 	}
-	//log.PanicIf(err)
 
 	for _, childMi := range mi.Children {
 		if childMi.TagID == tagID {
@@ -131,11 +128,8 @@ func (im *IfdMapping) GetChild(parentPathPhrase string, tagID exif.TagID) (mi *M
 		}
 	}
 
-	// Whether or not an IFD is defined in data, such an IFD is not registered
-	// and would be unknown.
-	panic(ErrChildIfdNotMapped)
-	//log.Panic(ErrChildIfdNotMapped)
-	//return nil, nil
+	// Whether or not an IFD is defined in data, such an IFD is not registered and would be unknown.
+	return nil, ErrChildIfdNotMapped
 }
 
 func (im *IfdMapping) GetWithPath(pathPhrase string) (mi *MappedIfd, err error) {
@@ -147,8 +141,7 @@ func (im *IfdMapping) GetWithPath(pathPhrase string) (mi *MappedIfd, err error) 
 	}()
 
 	if pathPhrase == "" {
-		panic(fmt.Errorf("path-phrase is empty"))
-		//log.Panicf("path-phrase is empty")
+		return nil, fmt.Errorf("Path-phrase is empty")
 	}
 
 	path := strings.Split(pathPhrase, "/")

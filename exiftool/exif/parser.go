@@ -44,7 +44,7 @@ func (p *Parser) ParseBytes(data []byte, unitCount uint32) (value []uint8, err e
 
 	count := int(unitCount)
 
-	if len(data) < (TypeByte.Size() * count) {
+	if len(data) < (TypeByteSize * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -66,7 +66,7 @@ func (p *Parser) ParseASCII(data []byte, unitCount uint32) (value string, err er
 
 	count := int(unitCount)
 
-	if len(data) < (TypeASCII.Size() * count) {
+	if len(data) < (TypeASCIISize * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -93,7 +93,7 @@ func (p *Parser) ParseASCIINoNul(data []byte, unitCount uint32) (value string, e
 	}()
 	count := int(unitCount)
 
-	if len(data) < (TypeASCII.Size() * count) {
+	if len(data) < (TypeASCIISize * count) {
 		err = ErrNotEnoughData
 		return
 	}
@@ -111,7 +111,7 @@ func (p *Parser) ParseShorts(data []byte, unitCount uint32, byteOrder binary.Byt
 	}()
 	count := int(unitCount)
 
-	if len(data) < (TypeShort.Size() * count) {
+	if len(data) < (TypeShortSize * count) {
 		panic(ErrNotEnoughData)
 	}
 
@@ -134,7 +134,7 @@ func (p *Parser) ParseLongs(data []byte, unitCount uint32, byteOrder binary.Byte
 
 	count := int(unitCount)
 
-	if len(data) < (TypeLong.Size() * count) {
+	if len(data) < (TypeLongSize * count) {
 		panic(ErrNotEnoughData)
 	}
 
@@ -157,7 +157,7 @@ func (p *Parser) ParseRationals(data []byte, unitCount uint32, byteOrder binary.
 
 	count := int(unitCount)
 
-	if len(data) < (TypeRational.Size() * count) {
+	if len(data) < (TypeRationalSize * count) {
 		panic(ErrNotEnoughData)
 	}
 
@@ -181,7 +181,7 @@ func (p *Parser) ParseSignedLongs(data []byte, unitCount uint32, byteOrder binar
 
 	count := int(unitCount)
 
-	if len(data) < (TypeSignedLong.Size() * count) {
+	if len(data) < (TypeSignedLongSize * count) {
 		panic(ErrNotEnoughData)
 	}
 
@@ -208,7 +208,7 @@ func (p *Parser) ParseSignedRationals(data []byte, unitCount uint32, byteOrder b
 	}()
 	count := int(unitCount)
 
-	if len(data) < (TypeSignedRational.Size() * count) {
+	if len(data) < (TypeSignedRationalSize * count) {
 		panic(ErrNotEnoughData)
 	}
 

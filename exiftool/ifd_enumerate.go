@@ -1,8 +1,6 @@
 package exiftool
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 
@@ -22,25 +20,51 @@ const (
 	ExifAddressableAreaStart = uint32(0x0)
 )
 
-func NewIfdEnumerate(ifdMapping *IfdMapping, tagIndex *TagIndex, exifData []byte, byteOrder binary.ByteOrder) *IfdEnumerate {
+// IfdTagEnumerator knows how to decode an IFD and all of the tags it
+// describes.
+//
+// The IFDs and the actual values can float throughout the EXIF block, but the
+// IFD itself is just a minor header followed by a set of repeating,
+// statically-sized records. So, the tags (though notnecessarily their values)
+// are fairly simple to enumerate.
+type IfdTagEnumerator struct {
+	exifReader *ExifReader
+	//byteOrder  binary.ByteOrder // Prefer exifReader.ByteOrder
+	ifdOffset uint32
+	//buffer     *bytes.Buffer // Remove
+}
+
+// IfdEnumerate -
+type IfdEnumerate struct {
+	exifReader    *ExifReader
+	currentOffset uint32
+	tagIndex      *TagIndex
+	ifdMapping    *IfdMapping
+}
+
+func newIfdEnumerate(er *ExifReader, ifdMapping *IfdMapping, tagIndex *TagIndex) *IfdEnumerate {
 	return &IfdEnumerate{
-		exifData:   exifData,
-		buffer:     bytes.NewBuffer(exifData),
-		byteOrder:  byteOrder,
+		exifReader: er,
 		ifdMapping: ifdMapping,
 		tagIndex:   tagIndex,
 	}
 }
 
-// NewIfdTagEnumerator creates a new IFD Tag Enumerator
-func NewIfdTagEnumerator(addressableData []byte, byteOrder binary.ByteOrder, ifdOffset uint32) (enumerator *IfdTagEnumerator) {
-	enumerator = &IfdTagEnumerator{
-		addressableData: addressableData,
-		byteOrder:       byteOrder,
-		buffer:          bytes.NewBuffer(addressableData[ifdOffset:]),
+// getIfdEnumerate creates a new IFD Enumerate
+func (er *ExifReader) getIfdEnumerate(ifdMapping *IfdMapping, tagIndex *TagIndex) *IfdEnumerate {
+	return &IfdEnumerate{
+		exifReader: er,
+		ifdMapping: ifdMapping,
+		tagIndex:   tagIndex,
 	}
+}
 
-	return enumerator
+// getTagEnumerator creates a new IFD Tag Enumerator
+func (ie *IfdEnumerate) getTagEnumerator(ifdOffset uint32) (enumerator *IfdTagEnumerator) {
+	return &IfdTagEnumerator{
+		exifReader: ie.exifReader.SubReader(int64(ifdOffset)),
+		ifdOffset:  ifdOffset,
+	}
 }
 
 // Scan enumerates the different EXIF blocks (called IFDs). `rootIfdName` will
@@ -59,10 +83,13 @@ func (ie *IfdEnumerate) Scan(rootIfdName string, ifdOffset uint32, visitor TagVi
 func (ie *IfdEnumerate) scan(fqIfdName string, ifdOffset uint32, visitor TagVisitorFn) (err error) {
 	defer func() {
 		if state := recover(); state != nil {
+			err = state.(error)
 		}
 	}()
 	for ifdIndex := 0; ; ifdIndex++ {
+		//fmt.Printf("Parsing IFD [%s] (%d) at offset (%04x).\n", fqIfdName, ifdIndex, ifdOffset)
 		//ifdEnumerateLogger.Debugf(nil, "Parsing IFD [%s] (%d) at offset (%04x).", fqIfdName, ifdIndex, ifdOffset)
+
 		enumerator := ie.getTagEnumerator(ifdOffset)
 		nextIfdOffset, _, _, err := ie.ParseIfd(fqIfdName, ifdIndex, enumerator, visitor, true)
 		if err != nil {
@@ -79,17 +106,9 @@ func (ie *IfdEnumerate) scan(fqIfdName string, ifdOffset uint32, visitor TagVisi
 	return nil
 }
 
-func (ie *IfdEnumerate) getTagEnumerator(ifdOffset uint32) (enumerator *IfdTagEnumerator) {
-	enumerator = NewIfdTagEnumerator(
-		ie.exifData[ExifAddressableAreaStart:],
-		ie.byteOrder,
-		ifdOffset)
-
-	return enumerator
-}
-
 // ParseIfd decodes the IFD block that we're currently sitting on the first
 // byte of.
+// WIP: Test & Benchmark
 func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *IfdTagEnumerator, visitor TagVisitorFn, doDescend bool) (nextIfdOffset uint32, entries []*IfdTagEntry, thumbnailData []byte, err error) {
 	defer func() {
 		if state := recover(); state != nil {
@@ -104,23 +123,23 @@ func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *Ifd
 
 	//ifdEnumerateLogger.Debugf(nil, "Current IFD tag-count: (%d)", tagCount)
 
-	entries = make([]*IfdTagEntry, 0)
+	entries = make([]*IfdTagEntry, 0, 20)
 
 	var enumeratorThumbnailOffset *IfdTagEntry
 	var enumeratorThumbnailSize *IfdTagEntry
+	//fmt.Println(tagCount)
 
 	for i := 0; i < int(tagCount); i++ {
 		ite, err := ie.parseTag(fqIfdPath, i, enumerator)
 		if err != nil {
-			if err == ErrTagTypeNotValid {
-				//if log.Is(err, ErrTagTypeNotValid) == true {
+			if errors.Is(err, ErrTagTypeNotValid) {
+				// Log TagNotValid Error
 				//ifdEnumerateLogger.Warningf(nil, "Tag in IFD [%s] at position (%d) has invalid type and will be skipped.", fqIfdPath, i)
 				continue
 			}
 			if err != nil {
 				panic(err)
 			}
-			//log.Panic(err)
 		}
 
 		tagID := ite.TagID()
@@ -133,11 +152,10 @@ func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *Ifd
 			continue
 		}
 
-		if visitor != nil {
+		if visitor != nil && ite.ChildIfdPath() == "" {
 			if err := visitor(fqIfdPath, ifdIndex, ite); err != nil {
 				panic(err)
 			}
-			//log.PanicIf(err)
 		}
 
 		// If it's an IFD but not a standard one, it'll just be seen as a LONG
@@ -150,7 +168,6 @@ func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *Ifd
 				if err := ie.scan(ite.ChildFqIfdPath(), ite.getValueOffset(), visitor); err != nil {
 					panic(err)
 				}
-				//log.PanicIf(err)
 			}
 		}
 
@@ -166,11 +183,10 @@ func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *Ifd
 		//	//log.PanicIf(err)
 	}
 
-	nextIfdOffset, _, err = enumerator.getUint32()
-	if err != nil {
+	// NextIfdOffset
+	if nextIfdOffset, _, err = enumerator.getUint32(); err != nil {
 		panic(err)
 	}
-	//log.PanicIf(err)
 
 	//ifdEnumerateLogger.Debugf(nil, "Next IFD at offset: (%08x)", nextIfdOffset)
 
@@ -193,15 +209,16 @@ func (ife *IfdTagEnumerator) getUint16() (value uint16, raw []byte, err error) {
 	raw = make([]byte, needBytes)
 
 	for offset < needBytes {
-		n, err := ife.buffer.Read(raw[offset:])
+		n, err := ife.exifReader.Read(raw[offset:])
+		//n, err := ife.buffer.Read(raw[offset:])
 		if err != nil {
 			panic(err)
 		}
 
 		offset += n
 	}
-
-	value = ife.byteOrder.Uint16(raw)
+	value = ife.exifReader.byteOrder.Uint16(raw)
+	//value = ife.byteOrder.Uint16(raw)
 
 	return value, raw, nil
 }
@@ -222,7 +239,8 @@ func (ife *IfdTagEnumerator) getUint32() (value uint32, raw []byte, err error) {
 	raw = make([]byte, needBytes)
 
 	for offset < needBytes {
-		n, err := ife.buffer.Read(raw[offset:])
+		n, err := ife.exifReader.Read(raw[offset:])
+		//n, err := ife.buffer.Read(raw[offset:])
 		if err != nil {
 			panic(err)
 		}
@@ -230,7 +248,8 @@ func (ife *IfdTagEnumerator) getUint32() (value uint32, raw []byte, err error) {
 		offset += n
 	}
 
-	value = ife.byteOrder.Uint32(raw)
+	value = ife.exifReader.byteOrder.Uint32(raw)
+	//value = ife.byteOrder.Uint32(raw)
 
 	return value, raw, nil
 }
@@ -243,51 +262,53 @@ func (ie *IfdEnumerate) parseTag(fqIfdPath string, tagPosition int, enumerator *
 		}
 	}()
 
+	// TagID
 	id, _, err := enumerator.getUint16()
 	if err != nil {
 		panic(err)
 	}
 	tagID := exif.TagID(id)
-	//log.PanicIf(err)
 
+	// TagType
 	tagTypeRaw, _, err := enumerator.getUint16()
 	if err != nil {
 		panic(err)
 	}
 	tagType := exif.TagType(tagTypeRaw)
+	if tagType.IsValid() == false {
+		panic(ErrTagTypeNotValid)
+	}
 
+	// UnitCount
 	unitCount, _, err := enumerator.getUint32()
 	if err != nil {
 		panic(err)
 	}
 
+	// Offsets
 	valueOffset, rawValueOffset, err := enumerator.getUint32()
 	if err != nil {
 		panic(err)
-	}
-
-	if tagType.IsValid() == false {
-		panic(ErrTagTypeNotValid)
 	}
 
 	ifdPath, err := ie.ifdMapping.StripPathPhraseIndices(fqIfdPath)
 	if err != nil {
 		panic(err)
 	}
-	//log.PanicIf(err)
+	//fmt.Println(ifdPath, fqIfdPath)
+	//ifdPath := fqIfdPath
+	ite = newIfdTagEntry(
+		ifdPath,
+		tagID,
+		tagPosition,
+		tagType,
+		unitCount,
+		valueOffset,
+		rawValueOffset,
+		ie.exifReader,
+		ie.exifReader.byteOrder)
 
-	//ite = newIfdTagEntry(
-	//	ifdPath,
-	//	tagID,
-	//	tagPosition,
-	//	tagType,
-	//	unitCount,
-	//	valueOffset,
-	//	rawValueOffset,
-	//	ie.exifData[ExifAddressableAreaStart:],
-	//	ie.byteOrder)
-	ite = &IfdTagEntry{}
-	fmt.Sprintln(unitCount, valueOffset, rawValueOffset)
+	//fmt.Sprintln(unitCount, valueOffset, rawValueOffset)
 
 	// If it's an IFD but not a standard one, it'll just be seen as a LONG
 	// (the standard IFD tag type), later, unless we skip it because it's
@@ -301,7 +322,7 @@ func (ie *IfdEnumerate) parseTag(fqIfdPath string, tagPosition int, enumerator *
 
 		// We also need to set `tag.ChildFqIfdPath` but can't do it here
 		// because we don't have the IFD index.
-	} else if err != ErrChildIfdNotMapped { //log.Is(err, ErrChildIfdNotMapped) == false {
+	} else if !errors.Is(err, ErrChildIfdNotMapped) {
 		panic(err)
 	}
 

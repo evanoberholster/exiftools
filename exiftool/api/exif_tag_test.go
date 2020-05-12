@@ -2,21 +2,19 @@ package api
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"testing"
 
-	exifold "github.com/evanoberholster/exiftools/exif"
 	"github.com/evanoberholster/exiftools/exiftool"
+	"github.com/evanoberholster/exiftools/exiftool/buffer"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
 	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
-	mknoteold "github.com/evanoberholster/exiftools/mknote"
 )
 
 const (
-	testPath = "../../../test/img/2.CR2"
+	testPath = "../../../test/img/13.jpg"
 )
 
 var ti *exiftool.TagIndex
@@ -72,39 +70,39 @@ func BenchmarkExifDecode200(b *testing.B) {
 
 	b.ReportAllocs()
 	b.ResetTimer()
-	var eh *exiftool.ExifHeader
-	var p []byte
+	var er *exiftool.ExifReader
 	for i := 0; i < b.N; i++ {
 		f.Seek(0, 0)
-		eh, err = exiftool.ParseExif(f)
+		cb := buffer.NewCacheBuffer(f, 256*1024)
+		er, err = exiftool.ParseExif2(cb)
 		if err != nil {
 			panic(err)
 		}
-		f.Seek(0, 0)
-		p, err = ioutil.ReadAll(f)
-		if err = eh.Decode(ifd.RootIfd.Name, im, ti, p, visitor); err != nil {
+		//f.Seek(0, 0)
+		//p, err = ioutil.ReadAll(f)
+		if err = er.Visit(ifd.RootIfd.Name, im, ti, visitor); err != nil {
 			b.Fatal(err)
 		}
 	}
 }
 
-func BenchmarkExifDecodeOld200(b *testing.B) {
-	var err error
-
-	f, err := os.Open(testPath)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-
-	exifold.RegisterParsers(mknoteold.All...)
-
-	b.ReportAllocs()
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		f.Seek(0, 0)
-		if _, err := exifold.DecodeWithParseHeader(f); err != nil {
-			b.Fatal(err)
-		}
-	}
-}
+//func BenchmarkExifDecodeOld200(b *testing.B) {
+//	var err error
+//
+//	f, err := os.Open(testPath)
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer f.Close()
+//
+//	exifold.RegisterParsers(mknoteold.All...)
+//
+//	b.ReportAllocs()
+//	b.ResetTimer()
+//	for i := 0; i < b.N; i++ {
+//		f.Seek(0, 0)
+//		if _, err := exifold.DecodeWithParseHeader(f); err != nil {
+//			b.Fatal(err)
+//		}
+//	}
+//}

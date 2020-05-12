@@ -7,6 +7,7 @@ import (
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
 
+// Errors
 var (
 	ErrChildIfdNotMapped = errors.New("no child-IFD for that tag-ID under parent")
 )

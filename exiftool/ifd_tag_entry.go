@@ -34,9 +34,9 @@ type IfdTagEntry struct {
 
 	isUnhandledUnknown bool
 
-	addressableData []byte
-	exifReader      *ExifReader
-	byteOrder       binary.ByteOrder
+	//addressableData []byte
+	exifReader *ExifReader
+	byteOrder  binary.ByteOrder
 }
 
 func newIfdTagEntry(ifdPath string, tagID exif.TagID, tagIndex int, tagType exif.TagType, unitCount uint32, valueOffset uint32, rawValueOffset []byte, exifReader *ExifReader, byteOrder binary.ByteOrder) *IfdTagEntry {
@@ -104,12 +104,6 @@ func (ite *IfdTagEntry) Value() (value interface{}, err error) {
 	}()
 
 	valueContext := ite.getValueContext()
-
-	// Lookup Makernote decode function
-	//path := strings.Split(ite.ifdPath, "/")
-	//if ite.tagID == mknote.CanonCameraSettings && path[len(path)-1] == "Makernotes.Canon" {
-	//	return valueContext.ValuesFn(mknote.ParseSignedInts)
-	//}
 
 	if ite.tagType == exif.TypeUndefined {
 		//var err error

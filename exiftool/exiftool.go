@@ -29,39 +29,18 @@ var (
 type TagVisitorFn func(fqIfdPath string, ifdIndex int, ite *IfdTagEntry) (err error)
 
 // Visit recursively invokes a callback for every tag.
-func (eh ExifHeader) Visit(rootIfdPointer exif.IfdPath, rootIfdName string, ifdMapping *IfdMapping, tagIndex *TagIndex, exifData []byte, visitor TagVisitorFn) (err error) {
+func (er ExifReader) Visit(rootIfdName string, ifdMapping *IfdMapping, tagIndex *TagIndex, visitor TagVisitorFn) (err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
 		}
 	}()
-	// check to make sure that rawExif is valid
-	if !eh.Valid() {
-		return ErrExifNotValid
-	}
+	// check to make sure that the ExifReader is valid
+	//if !eh.Valid() {
+	//	return ErrExifNotValid
+	//}
 
-	ie := NewIfdEnumerate(ifdMapping, tagIndex, exifData, eh.ByteOrder)
+	ie := er.getIfdEnumerate(ifdMapping, tagIndex)
 
-	return ie.Scan(rootIfdName, eh.FirstIfdOffset, visitor)
-}
-
-type ExifTagDecodeFn func(fqIfdPath string, ifdIndex int, ite *IfdTagEntry) (err error)
-
-func (eh *ExifHeader) Decode(rootIfdName string, ifdMapping *IfdMapping, tagIndex *TagIndex, data []byte, decodeFn TagVisitorFn) (err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = state.(error)
-		}
-	}()
-	// check to make sure that the ExifHeader is valid
-	if !eh.Valid() {
-		return ErrExifNotValid
-	}
-	// seek to begining of exif data
-	//reader.Seek(eh.FirstIfdOffset, 0)
-	er := NewExifReader(eh, data)
-	//reader.Seek(int64(eh.foundAt)+4, 0)
-	ie := newIfdEnumerate(er, ifdMapping, tagIndex, eh.ByteOrder)
-
-	return ie.scan2(rootIfdName, eh.FirstIfdOffset, decodeFn)
+	return ie.Scan(rootIfdName, er.firstIfdOffset, visitor)
 }
