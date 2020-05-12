@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/evanoberholster/exiftools/exiftool"
+	"github.com/evanoberholster/exiftools/exiftool/api"
 	"github.com/evanoberholster/exiftools/exiftool/buffer"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
@@ -14,7 +15,7 @@ import (
 
 func main() {
 	var path string
-	path = "../../../test/img/2.CR2"
+	path = "../../../test/img/4.CR2"
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -24,18 +25,12 @@ func main() {
 
 	start := time.Now()
 	er, err := exiftool.ParseExif2(cb)
-	//eh, err := exiftool.ParseExif(f)
 	fmt.Println("Exif time: ", time.Since(start), er)
 	if err != nil {
 		panic(err)
 		fmt.Println(err)
 	}
 
-	im := exiftool.NewIfdMapping()
-
-	if _, err = im.LoadIfds(ifd.RootIfd, ifdexif.ExifIfd, ifd.GPSIfd); err != nil {
-		fmt.Println(err)
-	}
 	//   ifd.IopIfd
 	//if _, err = im.LoadIfds(mknote.CanonMakernoteIfd); err != nil {
 	//	fmt.Println(err)
@@ -46,8 +41,16 @@ func main() {
 	ti.Add("IFD/Exif/Makernotes.Canon", mknote.CanonIfdTags)
 	ti.Add("IFD/GPS", ifd.GPSIfdTags)
 	//
-	//res := api.NewResults()
+	res := api.NewResults()
+	start = time.Now()
+	im := exiftool.NewIfdMapping()
 
+	if _, err = im.LoadIfds(ifd.RootIfd, ifdexif.ExifIfd, ifd.GPSIfd); err != nil {
+		fmt.Println(err)
+	}
+	//if _, err = im.LoadIfds(mknote.CanonMakernoteIfd); err != nil {
+	//	fmt.Println(err)
+	//}
 	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 		// GetTag
 		//fmt.Println(fqIfdPath, ite.TagID())
@@ -66,7 +69,7 @@ func main() {
 		//if ifdIndex > 0 {
 		//	fqIfdPath = fqIfdPath + strconv.Itoa(ifdIndex)
 		//}
-		//res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
+		res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
 
 		fmt.Printf("Path: %s \t| TagID: 0x%04x | %s   \t| %s ", fqIfdPath, ite.TagID(), t.Name, ite.TagType())
 		if ite.TagID() == ifd.XMLPacket {
@@ -82,7 +85,7 @@ func main() {
 
 	//f.Seek(0, 0)
 	//p, err := ioutil.ReadAll(f)
-	start = time.Now()
+
 	if err = er.Visit(ifd.RootIfd.Name, im, ti, visitor); err != nil {
 		fmt.Println(err)
 	}
@@ -94,7 +97,7 @@ func main() {
 	//fmt.Println(res.GPSInfo())
 	//fmt.Println(res.Copyright())
 	//fmt.Println(res.Artist())
-	//fmt.Println(res.CameraMake())
+	fmt.Println(res.CameraMake())
 	//fmt.Println(res.CameraModel())
 	//fmt.Println(res.CameraSerial())
 	//fmt.Println(res.LensMake())
@@ -115,8 +118,8 @@ func main() {
 	//fmt.Println(res.CanonShotInfo())
 	//fmt.Println(res.CanonFileInfo())
 	//fmt.Println(res.CanonAFInfo())
-	//
-	//fmt.Println("Get Time: ", time.Since(start))
+
+	fmt.Println("Get Time: ", time.Since(start))
 	//fmt.Println("Total Time: ", time.Since(begin))
 	//visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 	//	tagID := ite.TagID()

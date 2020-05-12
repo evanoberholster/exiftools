@@ -46,6 +46,8 @@ BenchmarkExifDecodeOld200-8   	     194	   6545560 ns/op	51937968 B/op	   16014 
 // With Exif Reader (2.CR2)
 BenchmarkExifDecode200-8   	        4789	    243761 ns/op	  573898 B/op	    1184 allocs/op
 BenchmarkExifDecode200-8   	        4356	    259563 ns/op	  593020 B/op	    1683 allocs/op
+BenchmarkExif200-8   	            4618	    266514 ns/op	  574332 B/op	    1225 allocs/op
+
 
 // With Exif Reader (13.JPG)
 BenchmarkExifDecode200-8      	    3212	    358326 ns/op	   32621 B/op	     877 allocs/op
@@ -64,3 +66,8 @@ BenchmarkExifDecode200-8   	        9229	    127098 ns/op	  545912 B/op	     612
 
 BenchmarkExifDecode200-8   	        7579	    159448 ns/op	  555621 B/op	     861 allocs/op
 BenchmarkExifDecode200-8   	        8698	    129389 ns/op	  545908 B/op	     612 allocs/op
+
+// (2.CR2) file
+BenchmarkExifDecode200-8        	    3816	    372854 ns/op	  574334 B/op	    1225 allocs/op
+BenchmarkExifDecodeOld200-8     	     175	   6248414 ns/op	52319365 B/op	   18219 allocs/op
+BenchmarkExifDecodeOprea200-8   	     861	   1393821 ns/op	  278769 B/op	   10461 allocs/op
