@@ -67,7 +67,7 @@ func (gi *GpsInfo) S2CellID() (cellID s2.CellID, err error) {
 }
 
 // GPSInfo convenience func. "IFD/GPS" GPSLatitude and GPSLongitude
-func (res Results) GPSInfo() (lat, lng float64, err error) {
+func (res ExifResults) GPSInfo() (lat, lng float64, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
@@ -77,11 +77,11 @@ func (res Results) GPSInfo() (lat, lng float64, err error) {
 	var raw []exif.Rational
 
 	// Latitude
-	ref, err = res.GetTag("IFD/GPS", ifd.GPSLatitudeRef).String()
+	ref, err = res.GetTag("IFD/GPS", 0, ifd.GPSLatitudeRef).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
-	raw, err = res.GetTag("IFD/GPS", ifd.GPSLatitude).Rational()
+	raw, err = res.GetTag("IFD/GPS", 0, ifd.GPSLatitude).GetRationals(res.exifReader)
 	if err != nil {
 		return
 	}
@@ -92,11 +92,11 @@ func (res Results) GPSInfo() (lat, lng float64, err error) {
 	}
 
 	// Longitude
-	ref, err = res.GetTag("IFD/GPS", ifd.GPSLongitudeRef).String()
+	ref, err = res.GetTag("IFD/GPS", 0, ifd.GPSLongitudeRef).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
-	raw, err = res.GetTag("IFD/GPS", ifd.GPSLongitude).Rational()
+	raw, err = res.GetTag("IFD/GPS", 0, ifd.GPSLongitude).GetRationals(res.exifReader)
 	if err != nil {
 		return
 	}
@@ -109,12 +109,12 @@ func (res Results) GPSInfo() (lat, lng float64, err error) {
 }
 
 // GPSTime convenience func. "IFD/GPS" GPSDateStamp and GPSTimeStamp
-func (res Results) GPSTime() (timestamp time.Time, err error) {
-	dateRaw, err := res.GetTag("IFD/GPS", ifd.GPSDateStamp).String()
+func (res ExifResults) GPSTime() (timestamp time.Time, err error) {
+	dateRaw, err := res.GetTag("IFD/GPS", 0, ifd.GPSDateStamp).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
-	timeRaw, err := res.GetTag("IFD/GPS", ifd.GPSTimeStamp).Rational()
+	timeRaw, err := res.GetTag("IFD/GPS", 0, ifd.GPSTimeStamp).GetRationals(res.exifReader)
 	if err != nil {
 		return
 	}

@@ -90,11 +90,3 @@ func (vc *ValueContext) Values() (values interface{}, err error) {
 	}
 
 }
-
-// WIP - Evan O.
-type DecoderFn func(reader io.ReaderAt, offset uint32, unitCount uint32, byteOrder binary.ByteOrder) (interface{}, error)
-
-func (vc *ValueContext) ValuesFn(fn DecoderFn) (values interface{}, err error) {
-
-	return fn(vc.exifReader, vc.valueOffset, vc.unitCount, vc.byteOrder)
-}

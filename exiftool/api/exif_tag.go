@@ -22,7 +22,11 @@ type ExifTag struct {
 	TagID   exif.TagID
 	tagName string
 	tagType exif.TagType
-	value   interface{}
+
+	// Needed to create ValueContext
+
+	// Old
+	value interface{}
 }
 
 // String returns an ExifTag as a string

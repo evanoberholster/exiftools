@@ -20,11 +20,11 @@ var (
 )
 
 // ModifyDate - the date and time at which the Exif file was modified
-func (res Results) ModifyDate() (time.Time, error) {
+func (res ExifResults) ModifyDate() (time.Time, error) {
 	// "IFD" DateTime
-	if dateRaw, err := res.GetTag("IFD", ifd.DateTime).String(); err == nil && dateRaw != "" {
+	if dateRaw, err := res.GetTag("IFD", 0, ifd.DateTime).GetString(res.exifReader); err == nil && dateRaw != "" {
 		// "IFD/Exif" SubSecTime
-		subSecRaw, _ := res.GetTag("IFD/Exif", ifdexif.SubSecTime).String()
+		subSecRaw, _ := res.GetTag("IFD/Exif", 0, ifdexif.SubSecTime).GetString(res.exifReader)
 		if dateTime, err := parseExifFullTimestamp(dateRaw, subSecRaw); err == nil && !dateTime.IsZero() {
 			return dateTime, nil
 		}
@@ -34,11 +34,11 @@ func (res Results) ModifyDate() (time.Time, error) {
 
 // DateTime - the date and time at which the EXIF file was created
 // with sub-second precision
-func (res Results) DateTime() (time.Time, error) {
+func (res ExifResults) DateTime() (time.Time, error) {
 	// "IFD/Exif" DateTimeOriginal
-	if dateRaw, err := res.GetTag("IFD/Exif", ifdexif.DateTimeOriginal).String(); err == nil && dateRaw != "" {
+	if dateRaw, err := res.GetTag("IFD/Exif", 0, ifdexif.DateTimeOriginal).GetString(res.exifReader); err == nil && dateRaw != "" {
 		// "IFD/Exif" SubSecTimeOriginal
-		subSecRaw, _ := res.GetTag("IFD/Exif", ifdexif.SubSecTimeOriginal).String()
+		subSecRaw, _ := res.GetTag("IFD/Exif", 0, ifdexif.SubSecTimeOriginal).GetString(res.exifReader)
 
 		if dateTime, err := parseExifFullTimestamp(dateRaw, subSecRaw); err == nil && !dateTime.IsZero() {
 			return dateTime, nil
@@ -46,9 +46,9 @@ func (res Results) DateTime() (time.Time, error) {
 	}
 
 	// "IFD/Exif" DateTimeDigitized
-	if dateRaw, err := res.GetTag("IFD/Exif", ifdexif.DateTimeDigitized).String(); err == nil && dateRaw != "" {
+	if dateRaw, err := res.GetTag("IFD/Exif", 0, ifdexif.DateTimeDigitized).GetString(res.exifReader); err == nil && dateRaw != "" {
 		// "IFD/Exif" SubSecTimeDigitized
-		subSecRaw, _ := res.GetTag("IFD/Exif", ifdexif.SubSecTimeDigitized).String()
+		subSecRaw, _ := res.GetTag("IFD/Exif", 0, ifdexif.SubSecTimeDigitized).GetString(res.exifReader)
 		if dateTime, err := parseExifFullTimestamp(dateRaw, subSecRaw); err == nil && !dateTime.IsZero() {
 			return dateTime, nil
 		}

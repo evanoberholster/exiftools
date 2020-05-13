@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 
 func main() {
 	var path string
-	path = "../../../test/img/4.CR2"
+	path = "../../../test/img/a.jpg"
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -41,7 +42,7 @@ func main() {
 	ti.Add("IFD/Exif/Makernotes.Canon", mknote.CanonIfdTags)
 	ti.Add("IFD/GPS", ifd.GPSIfdTags)
 	//
-	res := api.NewResults()
+	//res := api.NewResults()
 	start = time.Now()
 	im := exiftool.NewIfdMapping()
 
@@ -51,6 +52,8 @@ func main() {
 	//if _, err = im.LoadIfds(mknote.CanonMakernoteIfd); err != nil {
 	//	fmt.Println(err)
 	//}
+	//tags := make([]exif.Tag, 0, 2)
+	tags := api.NewIfdTagMap(er)
 	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 		// GetTag
 		//fmt.Println(fqIfdPath, ite.TagID())
@@ -61,24 +64,31 @@ func main() {
 		}
 
 		// TagValue
-		value, err := ite.Value()
-		if err != nil {
-			//	fmt.Printf("%s \t| Value Error: %s \n", t.Name, err.Error())
-			return nil
-		}
+		//value, err := ite.Value()
+		//if err != nil {
+		//	//	fmt.Printf("%s \t| Value Error: %s \n", t.Name, err.Error())
+		//	return nil
+		//}
+		ite.SetTag(&t)
+		tags.AddTag(t, int8(ifdIndex), fqIfdPath, ite.TagID())
+		//if ite.TagID() == ifd.Make {
+		//
+		//	tags = append(tags, t)
+		//}
+
 		//if ifdIndex > 0 {
 		//	fqIfdPath = fqIfdPath + strconv.Itoa(ifdIndex)
 		//}
-		res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
+		//res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
 
-		fmt.Printf("Path: %s \t| TagID: 0x%04x | %s   \t| %s ", fqIfdPath, ite.TagID(), t.Name, ite.TagType())
-		if ite.TagID() == ifd.XMLPacket {
-			//str := strings.Replace(string(value.([]byte)), "\n", "", -1)
-			//str = strings.Replace(str, "   ", "", -1)
-			//fmt.Println(str)
-		} else {
-			fmt.Println(value)
-		}
+		fmt.Printf("Path: %s \t| TagID: 0x%04x | %s   \t| %s \n", fqIfdPath, ite.TagID(), t.Name, ite.TagType())
+		//if ite.TagID() == ifd.XMLPacket {
+		//	//str := strings.Replace(string(value.([]byte)), "\n", "", -1)
+		//	//str = strings.Replace(str, "   ", "", -1)
+		//	//fmt.Println(str)
+		//} else {
+		//	//fmt.Println(value)
+		//}
 
 		return nil
 	}
@@ -92,34 +102,59 @@ func main() {
 	fmt.Println("Decode Time: ", time.Since(start))
 	start = time.Now()
 
-	// Variables
-	//fmt.Println(res.XMLPacket())
-	//fmt.Println(res.GPSInfo())
-	//fmt.Println(res.Copyright())
-	//fmt.Println(res.Artist())
-	fmt.Println(res.CameraMake())
-	//fmt.Println(res.CameraModel())
-	//fmt.Println(res.CameraSerial())
-	//fmt.Println(res.LensMake())
-	//fmt.Println(res.LensModel())
-	//fmt.Println(res.LensSerial())
-	//fmt.Println(res.Dimensions())
-	//fmt.Println(res.DateTime())
-	//fmt.Println(res.GPSTime())
-	//fmt.Println(res.ModifyDate())
-	//fmt.Println(res.ExposureProgram())
-	//fmt.Println(res.MeteringMode())
-	//fmt.Println(res.ShutterSpeed())
-	//fmt.Println(res.Aperture())
-	//fmt.Println(res.ISOSpeed())
-	//fmt.Println(res.FocalLength())
-	//fmt.Println(res.FocalLengthIn35mmFilm())
-	//fmt.Println(res.CanonCameraSettings())
-	//fmt.Println(res.CanonShotInfo())
-	//fmt.Println(res.CanonFileInfo())
-	//fmt.Println(res.CanonAFInfo())
+	//fmt.Println(tags["IFD"][ifd.Make])
 
+	// Thumbnails
+	for inum, i := range tags.GetIfd("IFD") {
+		fmt.Println(inum, "__")
+		fmt.Println(i[ifd.ImageWidth].GetInt(er))
+		fmt.Println(i[ifd.ImageLength].GetInt(er))
+		fmt.Println(i[ifd.StripByteCounts].GetInt(er))
+		fmt.Println(i[ifd.StripOffsets].GetInt(er))
+		fmt.Println(i[ifd.Compression].GetInt(er))
+	}
+
+	//fmt.Println(tags.GetIfds("IFD"))
+
+	// Variables
+	fmt.Println(tags.XMLPacket())
+	fmt.Println(tags.GPSInfo())
+	fmt.Println(tags.Copyright())
+	fmt.Println(tags.Artist())
+	fmt.Println(tags.CameraMake())
+	fmt.Println(tags.CameraModel())
+	fmt.Println(tags.CameraSerial())
+	fmt.Println(tags.LensMake())
+	fmt.Println(tags.LensModel())
+	fmt.Println(tags.LensSerial())
+	fmt.Println(tags.Dimensions())
+	fmt.Println(tags.ExposureProgram())
+	fmt.Println(tags.MeteringMode())
+	fmt.Println(tags.ShutterSpeed())
+	fmt.Println(tags.Aperture())
+	fmt.Println(tags.ISOSpeed())
+	fmt.Println(tags.FocalLength())
+	fmt.Println(tags.FocalLengthIn35mmFilm())
+	fmt.Println(tags.DateTime())
+	fmt.Println(tags.GPSTime())
+	fmt.Println(tags.ModifyDate())
+	fmt.Println(tags.CanonCameraSettings())
+	fmt.Println(tags.CanonShotInfo())
+	fmt.Println(tags.CanonFileInfo())
+	fmt.Println(tags.CanonAFInfo())
 	fmt.Println("Get Time: ", time.Since(start))
+
+	offset, size, err := tags.Thumbnail()
+	if err != nil {
+		os.Exit(0)
+	}
+	thumb := make([]byte, size)
+	if _, err := er.ReadAt(thumb, int64(offset)); err != nil {
+		fmt.Println(err)
+	} else {
+		ioutil.WriteFile("image.jpg", thumb, 0644)
+	}
+
 	//fmt.Println("Total Time: ", time.Since(begin))
 	//visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 	//	tagID := ite.TagID()

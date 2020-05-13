@@ -27,6 +27,10 @@ type ExifReader struct {
 	offset int64
 }
 
+func (er *ExifReader) ByteOrder() binary.ByteOrder {
+	return er.byteOrder
+}
+
 // SubReader returns an ExifReader with its offest set to IfdOffset and
 // an empty index
 func (er *ExifReader) SubReader(ifdOffset int64) *ExifReader {

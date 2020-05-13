@@ -22,75 +22,75 @@ var ExifIfd = exif.IfdItem{ExifPath, IfdExifID, IfdExif}
 
 // ExifIfdTags is a map of the the exif.TagID to exif.Tag for "IFD/Exif"
 var ExifIfdTags = map[exif.TagID]exif.Tag{
-	ExposureTime:              {"ExposureTime", exif.TypeRational},
-	FNumber:                   {"FNumber", exif.TypeRational},
-	ExposureProgram:           {"ExposureProgram", exif.TypeShort},
-	SpectralSensitivity:       {"SpectralSensitivity", exif.TypeASCII},
-	ISOSpeedRatings:           {"ISOSpeedRatings", exif.TypeShort},
-	OECF:                      {"OECF", exif.TypeUndefined}, // Unknown
-	SensitivityType:           {"SensitivityType", exif.TypeShort},
-	StandardOutputSensitivity: {"StandardOutputSensitivity", exif.TypeLong},
-	RecommendedExposureIndex:  {"RecommendedExposureIndex", exif.TypeLong},
-	ISOSpeed:                  {"ISOSpeed", exif.TypeLong},
-	ISOSpeedLatitudeyyy:       {"ISOSpeedLatitudeyyy", exif.TypeLong},
-	ISOSpeedLatitudezzz:       {"ISOSpeedLatitudezzz", exif.TypeLong},
-	ExifVersion:               {"ExifVersion", exif.TypeUndefined}, // Unknown
-	DateTimeOriginal:          {"DateTimeOriginal", exif.TypeASCII},
-	DateTimeDigitized:         {"DateTimeDigitized", exif.TypeASCII},
-	ComponentsConfiguration:   {"ComponentsConfiguration", exif.TypeUndefined}, // Unknown
-	CompressedBitsPerPixel:    {"CompressedBitsPerPixel", exif.TypeRational},
-	ShutterSpeedValue:         {"ShutterSpeedValue", exif.TypeSignedRational},
-	ApertureValue:             {"ApertureValue", exif.TypeRational},
-	BrightnessValue:           {"BrightnessValue", exif.TypeSignedRational},
-	ExposureBiasValue:         {"ExposureBiasValue", exif.TypeSignedRational},
-	MaxApertureValue:          {"MaxApertureValue", exif.TypeRational},
-	SubjectDistance:           {"SubjectDistance", exif.TypeRational},
-	MeteringMode:              {"MeteringMode", exif.TypeShort},
-	LightSource:               {"LightSource", exif.TypeShort},
-	Flash:                     {"Flash", exif.TypeShort},
-	FocalLength:               {"FocalLength", exif.TypeRational},
-	SubjectArea:               {"SubjectArea", exif.TypeShort},
-	MakerNote:                 {"MakerNote", exif.TypeUndefined},   // Unknown
-	UserComment:               {"UserComment", exif.TypeUndefined}, // Unknown
-	SubSecTime:                {"SubSecTime", exif.TypeASCII},
-	SubSecTimeOriginal:        {"SubSecTimeOriginal", exif.TypeASCII},
-	SubSecTimeDigitized:       {"SubSecTimeDigitized", exif.TypeASCII},
-	FlashpixVersion:           {"FlashpixVersion", exif.TypeUndefined}, // Unknown
-	ColorSpace:                {"ColorSpace", exif.TypeShort},
-	PixelXDimension:           {"PixelXDimension", exif.TypeLong},
-	PixelYDimension:           {"PixelYDimension", exif.TypeLong},
-	RelatedSoundFile:          {"RelatedSoundFile", exif.TypeASCII},
-	InteroperabilityTag:       {"InteroperabilityTag", exif.TypeLong},
-	FlashEnergy:               {"FlashEnergy", exif.TypeRational},
-	SpatialFrequencyResponse:  {"SpatialFrequencyResponse", exif.TypeUndefined}, // Unknown
-	FocalPlaneXResolution:     {"FocalPlaneXResolution", exif.TypeRational},
-	FocalPlaneYResolution:     {"FocalPlaneYResolution", exif.TypeRational},
-	FocalPlaneResolutionUnit:  {"FocalPlaneResolutionUnit", exif.TypeShort},
-	SubjectLocation:           {"SubjectLocation", exif.TypeShort},
-	ExposureIndex:             {"ExposureIndex", exif.TypeRational},
-	SensingMethod:             {"SensingMethod", exif.TypeShort},
-	FileSource:                {"FileSource", exif.TypeUndefined}, // Unknown
-	SceneType:                 {"SceneType", exif.TypeUndefined},  // Unknown
-	CFAPattern:                {"CFAPattern", exif.TypeUndefined}, // Unknown
-	CustomRendered:            {"CustomRendered", exif.TypeShort},
-	ExposureMode:              {"ExposureMode", exif.TypeShort},
-	WhiteBalance:              {"WhiteBalance", exif.TypeShort},
-	DigitalZoomRatio:          {"DigitalZoomRatio", exif.TypeRational},
-	FocalLengthIn35mmFilm:     {"FocalLengthIn35mmFilm", exif.TypeShort},
-	SceneCaptureType:          {"SceneCaptureType", exif.TypeShort},
-	GainControl:               {"GainControl", exif.TypeShort},
-	Contrast:                  {"Contrast", exif.TypeShort},
-	Saturation:                {"Saturation", exif.TypeShort},
-	Sharpness:                 {"Sharpness", exif.TypeShort},
-	DeviceSettingDescription:  {"DeviceSettingDescription", exif.TypeUndefined}, // Unknown
-	SubjectDistanceRange:      {"SubjectDistanceRange", exif.TypeShort},
-	ImageUniqueID:             {"ImageUniqueID", exif.TypeASCII},
-	CameraOwnerName:           {"CameraOwnerName", exif.TypeASCII},
-	BodySerialNumber:          {"BodySerialNumber", exif.TypeASCII},
-	LensSpecification:         {"LensSpecification", exif.TypeRational},
-	LensMake:                  {"LensMake", exif.TypeASCII},
-	LensModel:                 {"LensModel", exif.TypeASCII},
-	LensSerialNumber:          {"LensSerialNumber", exif.TypeASCII},
+	ExposureTime:              exif.NewTag("ExposureTime", exif.TypeRational),
+	FNumber:                   exif.NewTag("FNumber", exif.TypeRational),
+	ExposureProgram:           exif.NewTag("ExposureProgram", exif.TypeShort),
+	SpectralSensitivity:       exif.NewTag("SpectralSensitivity", exif.TypeASCII),
+	ISOSpeedRatings:           exif.NewTag("ISOSpeedRatings", exif.TypeShort),
+	OECF:                      exif.NewTag("OECF", exif.TypeUndefined), // Unknown
+	SensitivityType:           exif.NewTag("SensitivityType", exif.TypeShort),
+	StandardOutputSensitivity: exif.NewTag("StandardOutputSensitivity", exif.TypeLong),
+	RecommendedExposureIndex:  exif.NewTag("RecommendedExposureIndex", exif.TypeLong),
+	ISOSpeed:                  exif.NewTag("ISOSpeed", exif.TypeLong),
+	ISOSpeedLatitudeyyy:       exif.NewTag("ISOSpeedLatitudeyyy", exif.TypeLong),
+	ISOSpeedLatitudezzz:       exif.NewTag("ISOSpeedLatitudezzz", exif.TypeLong),
+	ExifVersion:               exif.NewTag("ExifVersion", exif.TypeUndefined), // Unknown
+	DateTimeOriginal:          exif.NewTag("DateTimeOriginal", exif.TypeASCII),
+	DateTimeDigitized:         exif.NewTag("DateTimeDigitized", exif.TypeASCII),
+	ComponentsConfiguration:   exif.NewTag("ComponentsConfiguration", exif.TypeUndefined), // Unknown
+	CompressedBitsPerPixel:    exif.NewTag("CompressedBitsPerPixel", exif.TypeRational),
+	ShutterSpeedValue:         exif.NewTag("ShutterSpeedValue", exif.TypeSignedRational),
+	ApertureValue:             exif.NewTag("ApertureValue", exif.TypeRational),
+	BrightnessValue:           exif.NewTag("BrightnessValue", exif.TypeSignedRational),
+	ExposureBiasValue:         exif.NewTag("ExposureBiasValue", exif.TypeSignedRational),
+	MaxApertureValue:          exif.NewTag("MaxApertureValue", exif.TypeRational),
+	SubjectDistance:           exif.NewTag("SubjectDistance", exif.TypeRational),
+	MeteringMode:              exif.NewTag("MeteringMode", exif.TypeShort),
+	LightSource:               exif.NewTag("LightSource", exif.TypeShort),
+	Flash:                     exif.NewTag("Flash", exif.TypeShort),
+	FocalLength:               exif.NewTag("FocalLength", exif.TypeRational),
+	SubjectArea:               exif.NewTag("SubjectArea", exif.TypeShort),
+	MakerNote:                 exif.NewTag("MakerNote", exif.TypeUndefined),   // Unknown
+	UserComment:               exif.NewTag("UserComment", exif.TypeUndefined), // Unknown
+	SubSecTime:                exif.NewTag("SubSecTime", exif.TypeASCII),
+	SubSecTimeOriginal:        exif.NewTag("SubSecTimeOriginal", exif.TypeASCII),
+	SubSecTimeDigitized:       exif.NewTag("SubSecTimeDigitized", exif.TypeASCII),
+	FlashpixVersion:           exif.NewTag("FlashpixVersion", exif.TypeUndefined), // Unknown
+	ColorSpace:                exif.NewTag("ColorSpace", exif.TypeShort),
+	PixelXDimension:           exif.NewTag("PixelXDimension", exif.TypeLong),
+	PixelYDimension:           exif.NewTag("PixelYDimension", exif.TypeLong),
+	RelatedSoundFile:          exif.NewTag("RelatedSoundFile", exif.TypeASCII),
+	InteroperabilityTag:       exif.NewTag("InteroperabilityTag", exif.TypeLong),
+	FlashEnergy:               exif.NewTag("FlashEnergy", exif.TypeRational),
+	SpatialFrequencyResponse:  exif.NewTag("SpatialFrequencyResponse", exif.TypeUndefined), // Unknown
+	FocalPlaneXResolution:     exif.NewTag("FocalPlaneXResolution", exif.TypeRational),
+	FocalPlaneYResolution:     exif.NewTag("FocalPlaneYResolution", exif.TypeRational),
+	FocalPlaneResolutionUnit:  exif.NewTag("FocalPlaneResolutionUnit", exif.TypeShort),
+	SubjectLocation:           exif.NewTag("SubjectLocation", exif.TypeShort),
+	ExposureIndex:             exif.NewTag("ExposureIndex", exif.TypeRational),
+	SensingMethod:             exif.NewTag("SensingMethod", exif.TypeShort),
+	FileSource:                exif.NewTag("FileSource", exif.TypeUndefined), // Unknown
+	SceneType:                 exif.NewTag("SceneType", exif.TypeUndefined),  // Unknown
+	CFAPattern:                exif.NewTag("CFAPattern", exif.TypeUndefined), // Unknown
+	CustomRendered:            exif.NewTag("CustomRendered", exif.TypeShort),
+	ExposureMode:              exif.NewTag("ExposureMode", exif.TypeShort),
+	WhiteBalance:              exif.NewTag("WhiteBalance", exif.TypeShort),
+	DigitalZoomRatio:          exif.NewTag("DigitalZoomRatio", exif.TypeRational),
+	FocalLengthIn35mmFilm:     exif.NewTag("FocalLengthIn35mmFilm", exif.TypeShort),
+	SceneCaptureType:          exif.NewTag("SceneCaptureType", exif.TypeShort),
+	GainControl:               exif.NewTag("GainControl", exif.TypeShort),
+	Contrast:                  exif.NewTag("Contrast", exif.TypeShort),
+	Saturation:                exif.NewTag("Saturation", exif.TypeShort),
+	Sharpness:                 exif.NewTag("Sharpness", exif.TypeShort),
+	DeviceSettingDescription:  exif.NewTag("DeviceSettingDescription", exif.TypeUndefined), // Unknown
+	SubjectDistanceRange:      exif.NewTag("SubjectDistanceRange", exif.TypeShort),
+	ImageUniqueID:             exif.NewTag("ImageUniqueID", exif.TypeASCII),
+	CameraOwnerName:           exif.NewTag("CameraOwnerName", exif.TypeASCII),
+	BodySerialNumber:          exif.NewTag("BodySerialNumber", exif.TypeASCII),
+	LensSpecification:         exif.NewTag("LensSpecification", exif.TypeRational),
+	LensMake:                  exif.NewTag("LensMake", exif.TypeASCII),
+	LensModel:                 exif.NewTag("LensModel", exif.TypeASCII),
+	LensSerialNumber:          exif.NewTag("LensSerialNumber", exif.TypeASCII),
 }
 
 // ExifIFD TagIDs

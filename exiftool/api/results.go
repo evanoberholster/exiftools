@@ -1,10 +1,7 @@
 package api
 
 import (
-	"strings"
-
 	"github.com/evanoberholster/exiftools/exiftool/exif"
-	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 )
 
 func NewResults() Results {
@@ -39,19 +36,4 @@ func (res Results) GetTag(fqIfdPath string, tagID exif.TagID) *ExifTag {
 		}
 	}
 	return nil
-}
-
-func (res Results) XMLPacket() (str string, err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = state.(error)
-		}
-	}()
-	et := res.GetTag("IFD", ifd.XMLPacket)
-	str, err = et.String()
-	if err != nil {
-		return
-	}
-	str = strings.Replace(str, "\n", "", -1)
-	return strings.Replace(str, "   ", "", -1), nil
 }

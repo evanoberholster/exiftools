@@ -2,6 +2,7 @@ package exiftool
 
 import (
 	"encoding/binary"
+	"fmt"
 
 	"github.com/evanoberholster/exiftools/exiftool/exif"
 )
@@ -141,4 +142,63 @@ func (ite *IfdTagEntry) getValueContext() *exif.ValueContext {
 		ite.exifReader,
 		ite.tagType,
 		ite.byteOrder)
+}
+
+func (ite *IfdTagEntry) SetTag(tag *exif.Tag) {
+	tag.Set(ite.ifdPath, ite.tagID, ite.unitCount, ite.valueOffset, ite.rawValueOffset)
+}
+
+func (ite *IfdTagEntry) ValueCtx() *exif.ValueContext {
+	return ite.getValueContext()
+}
+
+func (ite *IfdTagEntry) rawBytes() ([]byte, error) {
+	var err error
+	unitSizeRaw := uint32(ite.tagType.Size())
+	byteLength := unitSizeRaw * ite.unitCount
+
+	//fmt.Println(vc.valueOffset, vc.unitCount*unitSizeRaw)
+	if byteLength <= 4 {
+		return ite.rawValueOffset[:byteLength], nil
+	}
+
+	data := make([]byte, byteLength)
+	_, err = ite.exifReader.ReadAt(data, int64(ite.valueOffset))
+	if err != nil {
+		panic(err)
+	}
+	return data, err
+}
+
+func (ite *IfdTagEntry) ReadASCII() (value string, err error) {
+	var data []byte
+	unitSizeRaw := uint32(ite.tagType.Size())
+	byteLength := unitSizeRaw * ite.unitCount
+
+	//fmt.Println(vc.valueOffset, vc.unitCount*unitSizeRaw)
+	if byteLength <= 4 {
+		data = ite.rawValueOffset[:byteLength]
+	} else {
+		data = make([]byte, byteLength)
+		_, err = ite.exifReader.ReadAt(data, int64(ite.valueOffset))
+		if err != nil {
+			panic(err)
+		}
+	}
+	count := int(ite.unitCount)
+
+	if len(data) < (exif.TypeASCIISize * count) {
+		err = fmt.Errorf("Not enog data")
+		return
+	}
+
+	if len(data) == 0 || data[count-1] != 0 {
+
+		//parserLogger.Warningf(nil, "ascii not terminated with nul as expected: [%v]", s)
+		return string(data[:count]), nil
+	}
+
+	// Auto-strip the NUL from the end. It serves no purpose outside of
+	// encoding semantics.
+	return string(data[:count-1]), nil
 }

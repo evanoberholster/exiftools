@@ -1,0 +1,58 @@
+package api
+
+import (
+	"encoding/binary"
+	"fmt"
+
+	"github.com/evanoberholster/exiftools/exiftool"
+	"github.com/evanoberholster/exiftools/exiftool/exif"
+)
+
+type ExifResults struct {
+	exifReader *exiftool.ExifReader
+	ifdTagMap  map[string][]exif.TagMap
+	byteOrder  binary.ByteOrder
+}
+
+func (itm ExifResults) String() string {
+	return fmt.Sprintln(itm.ifdTagMap)
+}
+
+// NewTagMap - initialize each TagMap with allocations for 10 Tags
+func NewTagMap() exif.TagMap {
+	return make(exif.TagMap, 10)
+}
+
+func NewIfdTagMap(er *exiftool.ExifReader) ExifResults {
+	return ExifResults{
+		exifReader: er,
+		byteOrder:  er.ByteOrder(),
+		ifdTagMap:  make(map[string][]exif.TagMap, 4),
+	}
+}
+
+func (itm ExifResults) GetTag(fqIfdPath string, ifdIndex int8, tagID exif.TagID) exif.Tag {
+	if ifd, ok := itm.ifdTagMap[fqIfdPath]; ok {
+		if tag, f := ifd[ifdIndex][tagID]; f {
+			return tag
+		}
+	}
+	return exif.Tag{}
+}
+
+func (itm ExifResults) GetIfd(fqIfdPath string) []exif.TagMap {
+	return itm.ifdTagMap[fqIfdPath]
+}
+
+func (itm ExifResults) AddTag(tag exif.Tag, ifdIndex int8, fqIfdPath string, tagID exif.TagID) {
+
+	if _, ok := itm.ifdTagMap[fqIfdPath]; !ok {
+		itm.ifdTagMap[fqIfdPath] = append(itm.ifdTagMap[fqIfdPath], NewTagMap())
+	} else {
+		if len(itm.ifdTagMap[fqIfdPath]) == int(ifdIndex) {
+			itm.ifdTagMap[fqIfdPath] = append(itm.ifdTagMap[fqIfdPath], NewTagMap())
+		}
+	}
+
+	itm.ifdTagMap[fqIfdPath][ifdIndex][tagID] = tag
+}

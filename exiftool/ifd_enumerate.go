@@ -31,7 +31,7 @@ type IfdTagEnumerator struct {
 	exifReader *ExifReader
 	//byteOrder  binary.ByteOrder // Prefer exifReader.ByteOrder
 	ifdOffset uint32
-	//buffer     *bytes.Buffer // Remove
+	rawBytes  []byte
 }
 
 // IfdEnumerate -
@@ -64,6 +64,7 @@ func (ie *IfdEnumerate) getTagEnumerator(ifdOffset uint32) (enumerator *IfdTagEn
 	return &IfdTagEnumerator{
 		exifReader: ie.exifReader.SubReader(int64(ifdOffset)),
 		ifdOffset:  ifdOffset,
+		rawBytes:   make([]byte, 4),
 	}
 }
 
@@ -91,7 +92,7 @@ func (ie *IfdEnumerate) scan(fqIfdName string, ifdOffset uint32, visitor TagVisi
 		//ifdEnumerateLogger.Debugf(nil, "Parsing IFD [%s] (%d) at offset (%04x).", fqIfdName, ifdIndex, ifdOffset)
 
 		enumerator := ie.getTagEnumerator(ifdOffset)
-		nextIfdOffset, _, _, err := ie.ParseIfd(fqIfdName, ifdIndex, enumerator, visitor, true)
+		nextIfdOffset, _, _, err := ie.ParseIfd2(fqIfdName, ifdIndex, enumerator, visitor, true)
 		if err != nil {
 			return err
 		}
@@ -145,7 +146,6 @@ func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *Ifd
 		tagID := ite.TagID()
 		if tagID == ThumbnailOffsetTagId {
 			enumeratorThumbnailOffset = ite
-
 			continue
 		} else if tagID == ThumbnailSizeTagId {
 			enumeratorThumbnailSize = ite
@@ -230,7 +230,6 @@ func (ife *IfdTagEnumerator) getUint32() (value uint32, raw []byte, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
-			//err = log.Wrap(state.(error))
 		}
 	}()
 
@@ -240,7 +239,6 @@ func (ife *IfdTagEnumerator) getUint32() (value uint32, raw []byte, err error) {
 
 	for offset < needBytes {
 		n, err := ife.exifReader.Read(raw[offset:])
-		//n, err := ife.buffer.Read(raw[offset:])
 		if err != nil {
 			panic(err)
 		}
@@ -249,9 +247,52 @@ func (ife *IfdTagEnumerator) getUint32() (value uint32, raw []byte, err error) {
 	}
 
 	value = ife.exifReader.byteOrder.Uint32(raw)
-	//value = ife.byteOrder.Uint32(raw)
 
 	return value, raw, nil
+}
+
+// uint32 reads a uint32 and advances both our current and our current
+// accumulator (which allows us to know how far to seek to the beginning of the
+// next IFD when it's time to jump).
+func (ife *IfdTagEnumerator) uint32() (value uint32, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = state.(error)
+		}
+	}()
+	if len(ife.rawBytes) < 4 {
+		return 0, fmt.Errorf("Not enough bytes")
+	}
+
+	if n, err := ife.exifReader.Read(ife.rawBytes[:4]); err != nil || n != 4 { // Uint32 = 4bytes
+		panic(err)
+	}
+
+	value = ife.exifReader.byteOrder.Uint32(ife.rawBytes[:4])
+
+	return value, nil
+}
+
+// uint16 reads a uint16 and advances both our current and our current
+// accumulator (which allows us to know how far to seek to the beginning of the
+// next IFD when it's time to jump).
+func (ife *IfdTagEnumerator) uint16() (value uint16, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = state.(error)
+		}
+	}()
+	if len(ife.rawBytes) < 2 {
+		return 0, fmt.Errorf("Not enough bytes")
+	}
+
+	if n, err := ife.exifReader.Read(ife.rawBytes[:2]); err != nil || n != 2 { // Uint16 = 2bytes
+		panic(err)
+	}
+
+	value = ife.exifReader.byteOrder.Uint16(ife.rawBytes[:2])
+
+	return value, nil
 }
 
 func (ie *IfdEnumerate) parseTag(fqIfdPath string, tagPosition int, enumerator *IfdTagEnumerator) (ite *IfdTagEntry, err error) {
@@ -297,6 +338,90 @@ func (ie *IfdEnumerate) parseTag(fqIfdPath string, tagPosition int, enumerator *
 	}
 	//fmt.Println(ifdPath, fqIfdPath)
 	//ifdPath := fqIfdPath
+	ite = newIfdTagEntry(
+		ifdPath,
+		tagID,
+		tagPosition,
+		tagType,
+		unitCount,
+		valueOffset,
+		rawValueOffset,
+		ie.exifReader,
+		ie.exifReader.byteOrder)
+
+	//fmt.Sprintln(unitCount, valueOffset, rawValueOffset)
+
+	// If it's an IFD but not a standard one, it'll just be seen as a LONG
+	// (the standard IFD tag type), later, unless we skip it because it's
+	// [likely] not even in the standard list of known tags.
+	mi, err := ie.ifdMapping.GetChild(ifdPath, tagID)
+	if err == nil {
+		ite.SetChildIfd(
+			fmt.Sprintf("%s/%s", fqIfdPath, mi.Name),
+			mi.PathPhrase(),
+			mi.Name)
+
+		// We also need to set `tag.ChildFqIfdPath` but can't do it here
+		// because we don't have the IFD index.
+	} else if !errors.Is(err, ErrChildIfdNotMapped) {
+		panic(err)
+	}
+
+	return ite, nil
+}
+
+func (ie *IfdEnumerate) parseTag2(fqIfdPath string, tagPosition int, enumerator *IfdTagEnumerator) (ite *IfdTagEntry, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = state.(error)
+			//err = log.Wrap(state.(error))
+		}
+	}()
+
+	// TagID
+	id, err := enumerator.uint16()
+	if err != nil {
+		panic(err)
+	}
+	tagID := exif.TagID(id)
+
+	// TagType
+	tagTypeRaw, err := enumerator.uint16()
+	if err != nil {
+		panic(err)
+	}
+	tagType := exif.TagType(tagTypeRaw)
+	if tagType.IsValid() == false {
+		panic(ErrTagTypeNotValid)
+	}
+
+	// UnitCount
+	unitCount, err := enumerator.uint32()
+	if err != nil {
+		panic(err)
+	}
+	//if n, err := enumerator.exifReader.Read(raw); err != nil || n != 4 { // Uint32 = 4bytes
+	//	panic(err)
+	//}
+	//unitCount := enumerator.exifReader.byteOrder.Uint32(raw)
+
+	// Offsets
+	valueOffset, err := enumerator.uint32()
+	if err != nil {
+		panic(err)
+	}
+	rawValueOffset := make([]byte, 4)
+	if n := copy(rawValueOffset, enumerator.rawBytes); n < 4 {
+		panic(err)
+	}
+	//rawValueOffset := raw
+
+	//ifdPath, err := ie.ifdMapping.StripPathPhraseIndices(fqIfdPath)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//fmt.Println(ifdPath, fqIfdPath)
+	ifdPath := fqIfdPath
 	ite = newIfdTagEntry(
 		ifdPath,
 		tagID,

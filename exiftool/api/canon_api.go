@@ -30,7 +30,7 @@ type CanonCameraSettings struct {
 }
 
 // CanonShotInfo - Canon Makernote Shot Information
-// Incomplete
+// WIP / Incomplete
 type CanonShotInfo struct {
 	CameraTemperature      int16 // [12] 	CameraTemperature 	int16s 	(newer EOS models only)
 	FlashExposureComp      int16 // [15] 	FlashExposureComp 	int16s
@@ -61,8 +61,8 @@ type CanonAFInfo struct {
 
 // CanonCameraSettings convenience func. "IFD/Exif/Makernotes.Canon" CanonCameraSettings
 // Canon Camera Settings from the Makernote
-func (res Results) CanonCameraSettings() (CanonCameraSettings, error) {
-	ii, err := res.GetTag(CanonMakernotesIfdString, mknote.CanonCameraSettings).Short()
+func (res ExifResults) CanonCameraSettings() (CanonCameraSettings, error) {
+	ii, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonCameraSettings).GetUint16(res.exifReader)
 	if len(ii) < 24 || err != nil {
 		return CanonCameraSettings{}, err
 	}
@@ -80,8 +80,8 @@ func (res Results) CanonCameraSettings() (CanonCameraSettings, error) {
 
 // CanonShotInfo convenience func. "IFD/Exif/Makernotes.Canon" CanonShotInfo
 // Canon Camera Shot Info from the Makernote
-func (res Results) CanonShotInfo() (CanonShotInfo, error) {
-	si, err := res.GetTag(CanonMakernotesIfdString, mknote.CanonShotInfo).Short()
+func (res ExifResults) CanonShotInfo() (CanonShotInfo, error) {
+	si, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonShotInfo).GetUint16(res.exifReader)
 	if len(si) < 24 || err != nil {
 		return CanonShotInfo{}, err
 	}
@@ -98,8 +98,8 @@ func (res Results) CanonShotInfo() (CanonShotInfo, error) {
 
 // CanonFileInfo convenience func. "IFD/Exif/Makernotes.Canon" CanonFileInfo
 // Canon Camera File Info from the Makernote
-func (res Results) CanonFileInfo() (CanonFileInfo, error) {
-	fi, err := res.GetTag(CanonMakernotesIfdString, mknote.CanonFileInfo).Short()
+func (res ExifResults) CanonFileInfo() (CanonFileInfo, error) {
+	fi, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonFileInfo).GetUint16(res.exifReader)
 	if len(fi) < 21 || err != nil {
 		return CanonFileInfo{}, err
 	}
@@ -114,13 +114,13 @@ func (res Results) CanonFileInfo() (CanonFileInfo, error) {
 
 // CanonAFInfo -
 // Canon Camera AutoFocus Information from the Makernote
-func (res Results) CanonAFInfo() (afInfo CanonAFInfo, err error) {
+func (res ExifResults) CanonAFInfo() (afInfo CanonAFInfo, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
 		}
 	}()
-	af, err := res.GetTag(CanonMakernotesIfdString, mknote.CanonAFInfo2).Short()
+	af, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonAFInfo2).GetUint16(res.exifReader)
 	if len(af) < 8 || err != nil {
 		panic(ErrParseTag)
 	}
