@@ -151,6 +151,8 @@ func (tag Tag) GetInt(exifReader ExifReader) (value int, err error) {
 		value = int(exifReader.ByteOrder().Uint16(rawValue[:2]))
 	case TypeLong:
 		value = int(exifReader.ByteOrder().Uint32(rawValue[:4]))
+	case TypeByte:
+		value = int([]uint8(rawValue[:1])[0])
 	default:
 		panic(ErrUnparseableValue)
 	}

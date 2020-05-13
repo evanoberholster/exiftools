@@ -27,9 +27,9 @@ var (
 	parser *Parser
 )
 
-//func init() {
-//parser = new(Parser)
-//}
+func init() {
+	parser = new(Parser)
+}
 
 // Parser knows how to parse all well-defined, encoded EXIF types.
 type Parser struct{}

@@ -80,6 +80,26 @@ func (gi *GpsInfo) S2CellID() (cellID s2.CellID, err error) {
 	return cellID, nil
 }
 
+// GPSAltitude convenience func. "IFD/GPS" GPSAltitude
+// WIP
+func (res ExifResults) GPSAltitude() (alt float32, err error) {
+	// Altitude
+	num, denom, err := res.GetTag("IFD/GPS", 0, ifd.GPSAltitude).GetRational(res.exifReader)
+	if err != nil {
+		return 0.0, err
+	}
+
+	alt = float32(num) / float32(denom)
+
+	if ref, err := res.GetTag("IFD/GPS", 0, ifd.GPSAltitudeRef).GetInt(res.exifReader); err == nil {
+		if ref != 0 {
+			alt *= -1
+		}
+	}
+
+	return alt, nil
+}
+
 // GPSInfo convenience func. "IFD/GPS" GPSLatitude and GPSLongitude
 func (res ExifResults) GPSInfo() (lat, lng float64, err error) {
 	defer func() {

@@ -75,9 +75,10 @@ func main() {
 		fmt.Println(i[ifd.Compression].GetInt(er))
 	}
 
-	fmt.Println(tags.GetTag("IFD/Exif", 0, ifdexif.FocalLength).GetRational(er))
+	fmt.Println(tags.GetTag("IFD/GPS", 0, ifd.GPSAltitude).GetRational(er))
+	fmt.Println(tags.GetTag("IFD/GPS", 0, ifd.GPSAltitudeRef).GetInt(er))
 	fmt.Println(tags.FocalLength())
-	fmt.Println(tags.Aperture())
+	fmt.Println(tags.GPSAltitude())
 	//fmt.Println(tags.GetIfds("IFD"))
 
 	// Variables
