@@ -6,11 +6,6 @@ import (
 	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
 )
 
-// CanonMakerNote API constants
-const (
-	CanonMakernotesIfdString = "IFD/Exif/Makernotes.Canon"
-)
-
 // CanonCameraSettings - Canon Makernote Camera Settings
 // Incomplete
 type CanonCameraSettings struct {
@@ -62,7 +57,7 @@ type CanonAFInfo struct {
 // CanonCameraSettings convenience func. "IFD/Exif/Makernotes.Canon" CanonCameraSettings
 // Canon Camera Settings from the Makernote
 func (res ExifResults) CanonCameraSettings() (CanonCameraSettings, error) {
-	ii, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonCameraSettings).GetUint16(res.exifReader)
+	ii, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonCameraSettings).GetUint16(res.exifReader)
 	if len(ii) < 24 || err != nil {
 		return CanonCameraSettings{}, err
 	}
@@ -81,7 +76,7 @@ func (res ExifResults) CanonCameraSettings() (CanonCameraSettings, error) {
 // CanonShotInfo convenience func. "IFD/Exif/Makernotes.Canon" CanonShotInfo
 // Canon Camera Shot Info from the Makernote
 func (res ExifResults) CanonShotInfo() (CanonShotInfo, error) {
-	si, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonShotInfo).GetUint16(res.exifReader)
+	si, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonShotInfo).GetUint16(res.exifReader)
 	if len(si) < 24 || err != nil {
 		return CanonShotInfo{}, err
 	}
@@ -99,7 +94,8 @@ func (res ExifResults) CanonShotInfo() (CanonShotInfo, error) {
 // CanonFileInfo convenience func. "IFD/Exif/Makernotes.Canon" CanonFileInfo
 // Canon Camera File Info from the Makernote
 func (res ExifResults) CanonFileInfo() (CanonFileInfo, error) {
-	fi, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonFileInfo).GetUint16(res.exifReader)
+
+	fi, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonFileInfo).GetUint16(res.exifReader)
 	if len(fi) < 21 || err != nil {
 		return CanonFileInfo{}, err
 	}
@@ -120,7 +116,7 @@ func (res ExifResults) CanonAFInfo() (afInfo CanonAFInfo, err error) {
 			err = state.(error)
 		}
 	}()
-	af, err := res.GetTag(CanonMakernotesIfdString, 0, mknote.CanonAFInfo2).GetUint16(res.exifReader)
+	af, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonAFInfo2).GetUint16(res.exifReader)
 	if len(af) < 8 || err != nil {
 		panic(ErrParseTag)
 	}

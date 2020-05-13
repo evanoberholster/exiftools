@@ -53,7 +53,7 @@ func main() {
 	//	fmt.Println(err)
 	//}
 	//tags := make([]exif.Tag, 0, 2)
-	tags := api.NewIfdTagMap(er)
+	tags := api.NewExifResults(er)
 	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 		// GetTag
 		//fmt.Println(fqIfdPath, ite.TagID())

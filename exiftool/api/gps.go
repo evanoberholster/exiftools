@@ -9,6 +9,12 @@ import (
 	"github.com/golang/geo/s2"
 )
 
+// GPS API constants
+const (
+	// GPSIfd "IFD/GPS"
+	GPSIfdString = "IFD/GPS"
+)
+
 // gpsCoordsFromRationals returns a decimal given the EXIF-encoded information.
 // The refValue is the N/E/S/W direction that this position is relative to.
 func gpsCoordsFromRationals(refValue string, rawCoordinate []exif.Rational) (decimal float64, err error) {
@@ -77,11 +83,11 @@ func (res ExifResults) GPSInfo() (lat, lng float64, err error) {
 	var raw []exif.Rational
 
 	// Latitude
-	ref, err = res.GetTag("IFD/GPS", 0, ifd.GPSLatitudeRef).GetString(res.exifReader)
+	ref, err = res.GetTag(GPSIfdString, 0, ifd.GPSLatitudeRef).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
-	raw, err = res.GetTag("IFD/GPS", 0, ifd.GPSLatitude).GetRationals(res.exifReader)
+	raw, err = res.GetTag(GPSIfdString, 0, ifd.GPSLatitude).GetRationals(res.exifReader)
 	if err != nil {
 		return
 	}
@@ -92,11 +98,11 @@ func (res ExifResults) GPSInfo() (lat, lng float64, err error) {
 	}
 
 	// Longitude
-	ref, err = res.GetTag("IFD/GPS", 0, ifd.GPSLongitudeRef).GetString(res.exifReader)
+	ref, err = res.GetTag(GPSIfdString, 0, ifd.GPSLongitudeRef).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
-	raw, err = res.GetTag("IFD/GPS", 0, ifd.GPSLongitude).GetRationals(res.exifReader)
+	raw, err = res.GetTag(GPSIfdString, 0, ifd.GPSLongitude).GetRationals(res.exifReader)
 	if err != nil {
 		return
 	}
@@ -110,11 +116,11 @@ func (res ExifResults) GPSInfo() (lat, lng float64, err error) {
 
 // GPSTime convenience func. "IFD/GPS" GPSDateStamp and GPSTimeStamp
 func (res ExifResults) GPSTime() (timestamp time.Time, err error) {
-	dateRaw, err := res.GetTag("IFD/GPS", 0, ifd.GPSDateStamp).GetString(res.exifReader)
+	dateRaw, err := res.GetTag(GPSIfdString, 0, ifd.GPSDateStamp).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
-	timeRaw, err := res.GetTag("IFD/GPS", 0, ifd.GPSTimeStamp).GetRationals(res.exifReader)
+	timeRaw, err := res.GetTag(GPSIfdString, 0, ifd.GPSTimeStamp).GetRationals(res.exifReader)
 	if err != nil {
 		return
 	}

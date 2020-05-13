@@ -6,7 +6,8 @@ import (
 
 // Makernote Name
 const (
-	IfdCanonMakernote = "Makernotes.Canon"
+	IfdCanonMakernote   = "Makernotes.Canon"
+	FqIfdCanonMakernote = "IFD/Exif/Makernotes.Canon"
 )
 
 // CanonMakernoteIfd is the Makernote IFD "IFD/Exif/Makernotes" for Canon Cameras

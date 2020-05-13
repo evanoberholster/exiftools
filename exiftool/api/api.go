@@ -1,26 +1,37 @@
 package api
 
 import (
-	"math"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
 )
 
+// API Errors
+var (
+	ErrEmptyTag = errors.New("Error empty tag")
+	ErrParseTag = fmt.Errorf("Error parsing tag")
+	ErrTagType  = errors.New("Error wrong tag Type")
+
+	// ErrGpsCoordsNotValid means that some part of the geographic data were unparseable.
+	ErrGpsCoordsNotValid = errors.New("GPS coordinates not valid")
+)
+
 // Artist convenience func. "IFD" Artist
 func (res ExifResults) Artist() (artist string, err error) {
-	return res.GetTag("IFD", 0, ifd.Artist).GetString(res.exifReader)
+	return res.GetTag(ifd.IfdRoot, 0, ifd.Artist).GetString(res.exifReader)
 }
 
 // Copyright convenience func. "IFD" Copyright
 func (res ExifResults) Copyright() (copyright string, err error) {
-	return res.GetTag("IFD", 0, ifd.Copyright).GetString(res.exifReader)
+	return res.GetTag(ifd.IfdRoot, 0, ifd.Copyright).GetString(res.exifReader)
 }
 
 // CameraMake convenience func. "IFD" Make
 func (res ExifResults) CameraMake() (make string, err error) {
-	return res.GetTag("IFD", 0, ifd.Make).GetString(res.exifReader)
+	return res.GetTag(ifd.IfdRoot, 0, ifd.Make).GetString(res.exifReader)
 }
 
 // LensMake convenience func. "IFD/Exif" LensMake
@@ -30,7 +41,7 @@ func (res ExifResults) LensMake() (make string, err error) {
 
 // CameraModel convenience func. "IFD" Model
 func (res ExifResults) CameraModel() (model string, err error) {
-	return res.GetTag("IFD", 0, ifd.Model).GetString(res.exifReader)
+	return res.GetTag(ifd.IfdRoot, 0, ifd.Model).GetString(res.exifReader)
 }
 
 // LensModel convenience func. "IFD/Exif" LensModel
@@ -46,7 +57,7 @@ func (res ExifResults) CameraSerial() (serial string, err error) {
 	}
 
 	// CameraSerialNumber
-	return res.GetTag("IFD", 0, ifd.CameraSerialNumber).GetString(res.exifReader)
+	return res.GetTag(ifd.IfdRoot, 0, ifd.CameraSerialNumber).GetString(res.exifReader)
 }
 
 // LensSerial convenience func. "IFD/Exif" LensSerialNumber
@@ -64,9 +75,9 @@ func (res ExifResults) Dimensions() (width, height int, err error) {
 		}
 	}
 
-	width, err = res.GetTag("IFD", 0, ifd.ImageWidth).GetInt(res.exifReader)
+	width, err = res.GetTag(ifd.IfdRoot, 0, ifd.ImageWidth).GetInt(res.exifReader)
 	if err == nil {
-		height, err = res.GetTag("IFD", 0, ifd.ImageLength).GetInt(res.exifReader)
+		height, err = res.GetTag(ifd.IfdRoot, 0, ifd.ImageLength).GetInt(res.exifReader)
 		if err == nil {
 			return width, height, err
 		}
@@ -123,7 +134,7 @@ func (res ExifResults) FocalLength() (FocalLength, error) {
 // Lens Focal Length Equivalent for 35mm sensor in mm
 func (res ExifResults) FocalLengthIn35mmFilm() (FocalLength, error) {
 	// FocalLengthIn35mmFilm
-	if fn, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FocalLengthIn35mmFilm).GetInt(res.exifReader); err == nil && !math.IsNaN(float64(fn)) {
+	if fn, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FocalLengthIn35mmFilm).GetInt(res.exifReader); err == nil {
 		if fn > 0.0 {
 			return FocalLength(fn), nil
 		}
@@ -164,7 +175,7 @@ func (res ExifResults) XMLPacket() (str string, err error) {
 			err = state.(error)
 		}
 	}()
-	str, err = res.GetTag("IFD", 0, ifd.XMLPacket).GetString(res.exifReader)
+	str, err = res.GetTag(ifd.IfdRoot, 0, ifd.XMLPacket).GetString(res.exifReader)
 	if err != nil {
 		return
 	}
@@ -172,7 +183,7 @@ func (res ExifResults) XMLPacket() (str string, err error) {
 	return strings.Replace(str, "   ", "", -1), nil
 }
 
-// Thumbnail convenience func. "IFD" JPEGInterchangeFormat and JPEGInterchangeFormatLength
+// Thumbnail convenience func. "IFD0" StripOffsets and StripByteCounts
 // WIP
 // Errors with NEF images
 func (res ExifResults) Thumbnail() (int, int, error) {

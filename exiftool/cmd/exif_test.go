@@ -45,7 +45,7 @@ func BenchmarkExifDecode200(b *testing.B) {
 			b.Fatal(err)
 		}
 		//res := api.NewResults()
-		tags := api.NewIfdTagMap(er)
+		tags := api.NewExifResults(er)
 		visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 			// GetTag
 			t, err := ti.Get(fqIfdPath, ite.TagID())
