@@ -72,6 +72,8 @@ func (p *Parser) ParseASCII(data []byte, unitCount uint32) (value string, err er
 	}
 
 	if len(data) == 0 || data[count-1] != 0 {
+		data = data[:count]
+		data = bytes.Trim(data, "\x00")
 		s := string(data[:count])
 		//parserLogger.Warningf(nil, "ascii not terminated with nul as expected: [%v]", s)
 		return s, nil
@@ -79,7 +81,9 @@ func (p *Parser) ParseASCII(data []byte, unitCount uint32) (value string, err er
 
 	// Auto-strip the NUL from the end. It serves no purpose outside of
 	// encoding semantics.
-	return string(data[:count-1]), nil
+	data = data[:count]
+	data = bytes.Trim(data, "\x00")
+	return string(data), nil
 }
 
 // ParseASCIINoNul returns a string without any consideration for a trailing NUL

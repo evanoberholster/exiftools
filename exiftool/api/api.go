@@ -1,6 +1,7 @@
 package api
 
 import (
+	"math"
 	"strings"
 
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
@@ -98,24 +99,36 @@ func (res ExifResults) ShutterSpeed() (ShutterSpeed, error) {
 func (res ExifResults) Aperture() (float32, error) {
 	// ApertureValue
 	// FNumber
-	num, denom, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FNumber).GetRational(res.exifReader)
-	return float32(num) / float32(denom), err
+	if num, denom, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FNumber).GetRational(res.exifReader); err == nil {
+		if f := float32(num) / float32(denom); f > 0.0 {
+			return f, nil
+		}
+	}
+	return 0.0, ErrParseTag
 }
 
 // FocalLength convenience func. "IFD/Exif" FocalLength
 // Lens Focal Length in mm
 func (res ExifResults) FocalLength() (FocalLength, error) {
 	// FocalLength
-	num, denom, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FocalLength).GetRational(res.exifReader)
-	return FocalLength(float32(num) / float32(denom)), err
+	if num, denom, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FocalLength).GetRational(res.exifReader); err == nil {
+		if f := float32(num) / float32(denom); f > 0.0 {
+			return FocalLength(float32(num) / float32(denom)), nil
+		}
+	}
+	return 0.0, ErrEmptyTag
 }
 
 // FocalLengthIn35mmFilm convenience func. "IFD/Exif" FocalLengthIn35mmFilm
 // Lens Focal Length Equivalent for 35mm sensor in mm
 func (res ExifResults) FocalLengthIn35mmFilm() (FocalLength, error) {
 	// FocalLengthIn35mmFilm
-	fn, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FocalLengthIn35mmFilm).GetInt(res.exifReader)
-	return FocalLength(fn), err
+	if fn, err := res.GetTag(ifdexif.FqIfdExif, 0, ifdexif.FocalLengthIn35mmFilm).GetInt(res.exifReader); err == nil && !math.IsNaN(float64(fn)) {
+		if fn > 0.0 {
+			return FocalLength(fn), nil
+		}
+	}
+	return 0.0, ErrEmptyTag
 }
 
 // ISOSpeed convenience func. "IFD/Exif" ISOSpeed

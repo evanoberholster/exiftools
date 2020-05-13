@@ -67,7 +67,7 @@ func TestBase(t *testing.T) {
 		ModifyDate:   modifyDate,
 		Rating:       0,
 	}
-	base := xmp.Base(doc)
+	base := xmp.GetBase(doc)
 	if b.CreateDate != base.CreateDate {
 		t.Fatal("CreateDate does not match", base, b)
 	}
@@ -114,7 +114,7 @@ func TestDublinCore(t *testing.T) {
 		Subject:     []string{"National Park"},
 		Title:       "",
 	}
-	dc := xmp.DublinCore(doc)
+	dc := xmp.GetDublinCore(doc)
 	if c.Creator[0] != dc.Creator[0] {
 		t.Fatal("Creator does not match", dc.Creator, c.Creator)
 	}

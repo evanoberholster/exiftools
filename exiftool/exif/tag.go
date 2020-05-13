@@ -1,6 +1,7 @@
 package exif
 
 import (
+	"bytes"
 	"errors"
 	"io"
 )
@@ -95,10 +96,11 @@ func (tag Tag) GetString(exifReader io.ReaderAt) (value string, err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
+			value = ""
 		}
 	}()
 	if !tag.tagType.IsValid() {
-		panic(ErrEmptyTag)
+		return "", ErrEmptyTag
 	}
 	rawValue, err := tag.readRawEncoded(exifReader)
 	if err != nil {
@@ -112,7 +114,7 @@ func (tag Tag) GetString(exifReader io.ReaderAt) (value string, err error) {
 	case TypeByte:
 		var b []byte
 		b, err = parser.ParseBytes(rawValue, tag.unitCount)
-		value = string(b)
+		value = string(bytes.Trim(b, "\x00"))
 	default:
 		err = ErrUnparseableValue
 	}

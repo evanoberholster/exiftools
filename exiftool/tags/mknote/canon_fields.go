@@ -3,6 +3,10 @@ package mknote
 // CanonContinuousDrive is part of the CanonCameraSettings field
 type CanonContinuousDrive int16
 
+func (ccd CanonContinuousDrive) Int16() int16 {
+	return int16(ccd)
+}
+
 func (ccd CanonContinuousDrive) String() string {
 	return mapCanonContinuousDrive[ccd]
 }

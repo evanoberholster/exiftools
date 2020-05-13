@@ -16,7 +16,7 @@ import (
 
 func main() {
 	var path string
-	path = "../../../test/img/a.jpg"
+	path = "../../../test/img/1.heic"
 	f, err := os.Open(path)
 	if err != nil {
 		panic(err)
@@ -114,34 +114,39 @@ func main() {
 		fmt.Println(i[ifd.Compression].GetInt(er))
 	}
 
+	fmt.Println(tags.GetTag("IFD/Exif", 0, ifdexif.FocalLength).GetRational(er))
+	fmt.Println(tags.FocalLength())
+	fmt.Println(tags.Aperture())
 	//fmt.Println(tags.GetIfds("IFD"))
 
 	// Variables
-	fmt.Println(tags.XMLPacket())
-	fmt.Println(tags.GPSInfo())
-	fmt.Println(tags.Copyright())
-	fmt.Println(tags.Artist())
-	fmt.Println(tags.CameraMake())
-	fmt.Println(tags.CameraModel())
-	fmt.Println(tags.CameraSerial())
-	fmt.Println(tags.LensMake())
-	fmt.Println(tags.LensModel())
-	fmt.Println(tags.LensSerial())
-	fmt.Println(tags.Dimensions())
-	fmt.Println(tags.ExposureProgram())
-	fmt.Println(tags.MeteringMode())
-	fmt.Println(tags.ShutterSpeed())
-	fmt.Println(tags.Aperture())
-	fmt.Println(tags.ISOSpeed())
-	fmt.Println(tags.FocalLength())
-	fmt.Println(tags.FocalLengthIn35mmFilm())
-	fmt.Println(tags.DateTime())
-	fmt.Println(tags.GPSTime())
-	fmt.Println(tags.ModifyDate())
-	fmt.Println(tags.CanonCameraSettings())
-	fmt.Println(tags.CanonShotInfo())
-	fmt.Println(tags.CanonFileInfo())
-	fmt.Println(tags.CanonAFInfo())
+	//fmt.Println(tags.XMLPacket())
+	//fmt.Println(tags.GPSInfo())
+	//fmt.Println(tags.Copyright())
+	//fmt.Println(tags.Artist())
+	//mk, err := tags.CameraMake()
+	//
+	//fmt.Println(mk, err, len(mk))
+	//fmt.Println(tags.CameraModel())
+	//fmt.Println(tags.CameraSerial())
+	//fmt.Println(tags.LensMake())
+	//fmt.Println(tags.LensModel())
+	//fmt.Println(tags.LensSerial())
+	//fmt.Println(tags.Dimensions())
+	//fmt.Println(tags.ExposureProgram())
+	//fmt.Println(tags.MeteringMode())
+	//fmt.Println(tags.ShutterSpeed())
+	//fmt.Println(tags.Aperture())
+	//fmt.Println(tags.ISOSpeed())
+	//fmt.Println(tags.FocalLength())
+	//fmt.Println(tags.FocalLengthIn35mmFilm())
+	//fmt.Println(tags.DateTime())
+	//fmt.Println(tags.GPSTime())
+	//fmt.Println(tags.ModifyDate())
+	//fmt.Println(tags.CanonCameraSettings())
+	//fmt.Println(tags.CanonShotInfo())
+	//fmt.Println(tags.CanonFileInfo())
+	//fmt.Println(tags.CanonAFInfo())
 	fmt.Println("Get Time: ", time.Since(start))
 
 	offset, size, err := tags.Thumbnail()
