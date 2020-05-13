@@ -14,12 +14,6 @@ var (
 	ErrTagTypeNotValid = errors.New("Tag Type invalid")
 )
 
-const (
-	// ExifAddressableAreaStart is the absolute offset in the file that all
-	// offsets are relative to.
-	ExifAddressableAreaStart = uint32(0x0)
-)
-
 // IfdTagEnumerator knows how to decode an IFD and all of the tags it
 // describes.
 //
@@ -29,29 +23,28 @@ const (
 // are fairly simple to enumerate.
 type IfdTagEnumerator struct {
 	exifReader *ExifReader
-	//byteOrder  binary.ByteOrder // Prefer exifReader.ByteOrder
-	ifdOffset uint32
-	rawBytes  []byte
+	ifdOffset  uint32
+	rawBytes   []byte
 }
 
 // IfdEnumerate -
 type IfdEnumerate struct {
 	exifReader    *ExifReader
 	currentOffset uint32
-	tagIndex      *TagIndex
+	tagIndex      TagIndex
 	ifdMapping    *IfdMapping
 }
 
-func newIfdEnumerate(er *ExifReader, ifdMapping *IfdMapping, tagIndex *TagIndex) *IfdEnumerate {
-	return &IfdEnumerate{
-		exifReader: er,
-		ifdMapping: ifdMapping,
-		tagIndex:   tagIndex,
-	}
-}
+//func newIfdEnumerate(er *ExifReader, ifdMapping *IfdMapping, tagIndex TagIndex) *IfdEnumerate {
+//	return &IfdEnumerate{
+//		exifReader: er,
+//		ifdMapping: ifdMapping,
+//		tagIndex:   tagIndex,
+//	}
+//}
 
 // getIfdEnumerate creates a new IFD Enumerate
-func (er *ExifReader) getIfdEnumerate(ifdMapping *IfdMapping, tagIndex *TagIndex) *IfdEnumerate {
+func (er *ExifReader) getIfdEnumerate(ifdMapping *IfdMapping, tagIndex TagIndex) *IfdEnumerate {
 	return &IfdEnumerate{
 		exifReader: er,
 		ifdMapping: ifdMapping,
@@ -64,7 +57,7 @@ func (ie *IfdEnumerate) getTagEnumerator(ifdOffset uint32) (enumerator *IfdTagEn
 	return &IfdTagEnumerator{
 		exifReader: ie.exifReader.SubReader(int64(ifdOffset)),
 		ifdOffset:  ifdOffset,
-		rawBytes:   make([]byte, 4),
+		rawBytes:   make([]byte, 4), // Length of uint32
 	}
 }
 
@@ -144,10 +137,10 @@ func (ie *IfdEnumerate) ParseIfd(fqIfdPath string, ifdIndex int, enumerator *Ifd
 		}
 
 		tagID := ite.TagID()
-		if tagID == ThumbnailOffsetTagId {
+		if tagID == ThumbnailOffsetTagID {
 			enumeratorThumbnailOffset = ite
 			continue
-		} else if tagID == ThumbnailSizeTagId {
+		} else if tagID == ThumbnailSizeTagID {
 			enumeratorThumbnailSize = ite
 			continue
 		}

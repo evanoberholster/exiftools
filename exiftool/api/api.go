@@ -14,9 +14,6 @@ var (
 	ErrEmptyTag = errors.New("Error empty tag")
 	ErrParseTag = fmt.Errorf("Error parsing tag")
 	ErrTagType  = errors.New("Error wrong tag Type")
-
-	// ErrGpsCoordsNotValid means that some part of the geographic data were unparseable.
-	ErrGpsCoordsNotValid = errors.New("GPS coordinates not valid")
 )
 
 // Artist convenience func. "IFD" Artist

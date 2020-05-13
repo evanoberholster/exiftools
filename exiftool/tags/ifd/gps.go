@@ -12,11 +12,11 @@ const (
 
 // GPSPath is the GPS Ifd Path
 var (
-	GPSPath = exif.IfdPath{IfdRootID}
+	GPSPath = IfdPath{IfdRootID}
 )
 
 // GPSIfd is the GPS IFD "IFD/GPS" for GPSInfo
-var GPSIfd = exif.IfdItem{GPSPath, ifdGPSID, ifdGPS}
+var GPSIfd = IfdItem{GPSPath, ifdGPSID, ifdGPS}
 
 // GPSIfdTags is a map of the the exif.TagID to exif.Tag contained in the GPSInfo ifd
 var GPSIfdTags = map[exif.TagID]exif.Tag{

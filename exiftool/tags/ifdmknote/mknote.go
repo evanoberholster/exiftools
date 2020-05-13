@@ -1,4 +1,4 @@
-package mknote
+package ifdmknote
 
 import (
 	"github.com/evanoberholster/exiftools/exiftool/exif"
@@ -14,21 +14,21 @@ const (
 
 // MakernotePath is the MakernotePath Ifd Path
 var (
-	MakernotePath = exif.IfdPath{ifd.IfdRootID, ifdexif.IfdExifID}
+	MakernotePath = ifd.IfdPath{ifd.IfdRootID, ifdexif.IfdExifID}
 )
 
 // MakernoteIfd is the Makernote IFD "IFD/MakerNote" for Makernote
-var MakernoteIfd = exif.IfdItem{MakernotePath, IfdMakernoteID, IfdMakernote}
+var MakernoteIfd = ifd.IfdItem{MakernotePath, IfdMakernoteID, IfdMakernote}
 
 // LoadMakernotesIfd - returns the exif.IfdItem for the Make of the Camera
-func LoadMakernotesIfd(make string) exif.IfdItem {
+func LoadMakernotesIfd(make string) ifd.IfdItem {
 	if mknoteIfd, ok := mknoteRegistry[make]; ok {
 		return mknoteIfd
 	}
-	return exif.IfdItem{}
+	return ifd.IfdItem{}
 }
 
 // Makernote registry
-var mknoteRegistry = map[string]exif.IfdItem{
+var mknoteRegistry = map[string]ifd.IfdItem{
 	"Canon": CanonMakernoteIfd,
 }

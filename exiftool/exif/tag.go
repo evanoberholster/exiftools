@@ -2,6 +2,7 @@ package exif
 
 import (
 	"bytes"
+	"encoding/binary"
 	"errors"
 	"io"
 )
@@ -11,11 +12,14 @@ var (
 	ErrEmptyTag = errors.New("Error empty tag")
 )
 
+// ExifReader interface
+type ExifReader interface {
+	io.ReaderAt
+	ByteOrder() binary.ByteOrder
+}
+
 // TagID is the uint16 representation of an IFD tag
 type TagID uint16
-
-// IfdPath is an array of TagID representing an IFD
-type IfdPath []TagID
 
 // TagMap - is a lookupmap for Tags using their TagID
 type TagMap map[TagID]Tag
@@ -112,11 +116,12 @@ func (tag Tag) GetString(exifReader io.ReaderAt) (value string, err error) {
 	case TypeASCIINoNul:
 		value, err = parser.ParseASCIINoNul(rawValue, tag.unitCount)
 	case TypeByte:
-		var b []byte
-		b, err = parser.ParseBytes(rawValue, tag.unitCount)
-		value = string(bytes.Trim(b, "\x00"))
+		if len(rawValue) < int(TypeByteSize*tag.unitCount) {
+			panic(ErrNotEnoughData)
+		}
+		value = string(bytes.Trim(rawValue[:tag.unitCount], "\x00"))
 	default:
-		err = ErrUnparseableValue
+		panic(ErrUnparseableValue)
 	}
 	return
 }
@@ -137,19 +142,17 @@ func (tag Tag) GetInt(exifReader ExifReader) (value int, err error) {
 		panic(err)
 	}
 
+	if len(rawValue) < tag.tagType.Size()*int(tag.unitCount) {
+		panic(ErrNotEnoughData)
+	}
+
 	switch tag.tagType {
 	case TypeShort:
-		if len(rawValue) < int(TypeShortSize*tag.unitCount) {
-			panic(ErrNotEnoughData)
-		}
 		value = int(exifReader.ByteOrder().Uint16(rawValue[:2]))
 	case TypeLong:
-		if len(rawValue) < int(TypeLongSize*tag.unitCount) {
-			panic(ErrNotEnoughData)
-		}
 		value = int(exifReader.ByteOrder().Uint32(rawValue[:4]))
 	default:
-		err = ErrUnparseableValue
+		panic(ErrUnparseableValue)
 	}
 	return
 }
@@ -171,22 +174,19 @@ func (tag Tag) GetRational(exifReader ExifReader) (numerator int, denominator in
 	}
 
 	byteOrder := exifReader.ByteOrder()
+	if len(rawValue) < tag.tagType.Size()*int(tag.unitCount) {
+		panic(ErrNotEnoughData)
+	}
 
 	switch tag.tagType {
 	case TypeRational:
-		if len(rawValue) < int(TypeRationalSize*tag.unitCount) {
-			panic(ErrNotEnoughData)
-		}
 		numerator = int(byteOrder.Uint32(rawValue[0:4]))
 		denominator = int(byteOrder.Uint32(rawValue[4:8]))
 	case TypeSignedRational:
-		if len(rawValue) < int(TypeSignedRationalSize*tag.unitCount) {
-			panic(ErrNotEnoughData)
-		}
 		numerator = int(byteOrder.Uint32(rawValue[0:4]))
 		denominator = int(byteOrder.Uint32(rawValue[4:8]))
 	default:
-		err = ErrUnparseableValue
+		panic(ErrUnparseableValue)
 	}
 	return
 }
@@ -208,21 +208,20 @@ func (tag Tag) GetRationals(exifReader ExifReader) (value []Rational, err error)
 	}
 
 	byteOrder := exifReader.ByteOrder()
+	count := int(tag.unitCount)
+	if len(rawValue) < tag.tagType.Size()*count {
+		panic(ErrNotEnoughData)
+	}
 
 	switch tag.tagType {
 	case TypeRational:
-		count := int(tag.unitCount)
-		if len(rawValue) < TypeRationalSize*count {
-			panic(ErrNotEnoughData)
-		}
-
 		value = make([]Rational, count)
 		for i := 0; i < count; i++ {
 			value[i].Numerator = byteOrder.Uint32(rawValue[i*8:])
 			value[i].Denominator = byteOrder.Uint32(rawValue[i*8+4:])
 		}
 	default:
-		err = ErrUnparseableValue
+		panic(ErrUnparseableValue)
 	}
 	return
 }
@@ -242,20 +241,20 @@ func (tag Tag) GetUint16(exifReader ExifReader) (values []uint16, err error) {
 	if err != nil {
 		panic(err)
 	}
+	if len(rawValue) < tag.tagType.Size()*int(tag.unitCount) {
+		panic(ErrNotEnoughData)
+	}
 
 	byteOrder := exifReader.ByteOrder()
 
 	switch tag.tagType {
 	case TypeShort:
-		if len(rawValue) < int(TypeShortSize*tag.unitCount) {
-			panic(ErrNotEnoughData)
-		}
 		values = make([]uint16, tag.unitCount)
 		for i := 0; i < int(tag.unitCount); i++ {
 			values[i] = byteOrder.Uint16(rawValue[i*2:])
 		}
 	default:
-		err = ErrUnparseableValue
+		panic(ErrUnparseableValue)
 	}
 	return
 }

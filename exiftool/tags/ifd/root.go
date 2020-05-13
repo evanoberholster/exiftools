@@ -12,11 +12,11 @@ const (
 
 // RootPath is the Root Ifd Path
 var (
-	RootPath = exif.IfdPath{}
+	RootPath = IfdPath{}
 )
 
 // RootIfd is the Root IFD "IFD0" for ExifData
-var RootIfd = exif.IfdItem{RootPath, IfdRootID, IfdRoot}
+var RootIfd = IfdItem{RootPath, IfdRootID, IfdRoot}
 
 // RootIfdTags is a map of the the exif.TagID to exif.Tag for "IFD"
 var RootIfdTags = map[exif.TagID]exif.Tag{

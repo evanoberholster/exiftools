@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -15,6 +16,13 @@ const (
 	GPSIfdString = "IFD/GPS"
 )
 
+var (
+	// ErrGpsCoordsNotValid means that some part of the geographic data were unparseable.
+	ErrGpsCoordsNotValid = errors.New("GPS coordinates not valid")
+	// ErrGPSRationalNotValid means that the rawCoordinates were not long enough.
+	ErrGPSRationalNotValid = errors.New("GPS Coords requires a raw-coordinate with exactly three rationals")
+)
+
 // gpsCoordsFromRationals returns a decimal given the EXIF-encoded information.
 // The refValue is the N/E/S/W direction that this position is relative to.
 func gpsCoordsFromRationals(refValue string, rawCoordinate []exif.Rational) (decimal float64, err error) {
@@ -25,7 +33,7 @@ func gpsCoordsFromRationals(refValue string, rawCoordinate []exif.Rational) (dec
 	}()
 
 	if len(rawCoordinate) != 3 {
-		err = fmt.Errorf("new GPS Coords requires a raw-coordinate with exactly three rationals")
+		err = ErrGPSRationalNotValid
 		return
 	}
 
@@ -36,8 +44,8 @@ func gpsCoordsFromRationals(refValue string, rawCoordinate []exif.Rational) (dec
 	// Decimal is a negative value for a South or West Orientation
 	if refValue[0] == 'S' || refValue[0] == 'W' {
 		decimal = -decimal
-		return
 	}
+
 	return
 }
 

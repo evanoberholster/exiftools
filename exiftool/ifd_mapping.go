@@ -1,10 +1,17 @@
 package exiftool
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/evanoberholster/exiftools/exiftool/exif"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
+)
+
+// Errors
+var (
+	ErrChildIfdNotMapped = errors.New("no child-IFD for that tag-ID under parent")
 )
 
 type IfdTagIdAndIndex struct {
@@ -169,4 +176,87 @@ func (im *IfdMapping) GetWithPath(pathPhrase string) (mi *MappedIfd, err error) 
 
 func (mi *MappedIfd) PathPhrase() string {
 	return strings.Join(mi.Path, "/")
+}
+
+var (
+	ErrIfdNotValid = fmt.Errorf("Ifd not Valid")
+)
+
+// LoadIfds loads ifdItems in the IfdMapping
+func (im *IfdMapping) LoadIfds(ifds ...ifd.IfdItem) (*IfdMapping, error) {
+	var err error
+	for _, item := range ifds {
+		if err = im.addIfdItem(item); err != nil {
+			panic(err)
+		}
+	}
+
+	return im, err
+}
+
+//func (im *IfdMapping) addIfdItem(ifdPath exif.IfdPath, ifdPointer exif.TagID, name string) (err error) {
+func (im *IfdMapping) addIfdItem(ifdItem ifd.IfdItem) (err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = state.(error)
+		}
+	}()
+	if !ifdItem.Valid() {
+		return ErrIfdNotValid
+	}
+
+	ptr, err := im.GetParentPlacement(ifdItem.IfdPath)
+	if err != nil {
+		panic(err)
+	}
+
+	// Define Path
+	path := make([]string, len(ifdItem.IfdPath)+1)
+	if len(ifdItem.IfdPath) > 0 {
+		copy(path, ptr.Path)
+	}
+	path[len(path)-1] = ifdItem.Name
+
+	// Define Placement
+	placement := make(ifd.IfdPath, len(ifdItem.IfdPath)+1)
+	if len(placement) > 0 {
+		copy(placement, ptr.Placement)
+	}
+	placement[len(placement)-1] = ifdItem.TagID
+
+	childIfd := &MappedIfd{
+		ParentTagID: ptr.TagID,
+		Path:        path,
+		Placement:   placement,
+		Name:        ifdItem.Name,
+		TagID:       ifdItem.TagID,
+		Children:    make(map[exif.TagID]*MappedIfd),
+	}
+
+	if _, found := ptr.Children[ifdItem.TagID]; found == true {
+		panic(fmt.Errorf("Child IFD [%s] with tag-ID (0x%04x) already registered under IFD [%s] with tag-ID (0x%04x)", ifdItem.Name, ifdItem.TagID, ptr.Name, ptr.TagID))
+	}
+
+	ptr.Children[ifdItem.TagID] = childIfd
+
+	return nil
+}
+
+func (im *IfdMapping) GetParentPlacement(parentPlacement ifd.IfdPath) (childIfd *MappedIfd, err error) {
+	defer func() {
+		if state := recover(); state != nil {
+			err = state.(error)
+		}
+	}()
+
+	ptr := im.rootNode
+	for _, ifdTagID := range parentPlacement {
+		if descendantPtr, found := ptr.Children[ifdTagID]; found == false {
+			panic(fmt.Errorf("IFD [%s] with tag-ID (0x%04x) not registered ", ptr.PathPhrase(), ifdTagID))
+		} else {
+			ptr = descendantPtr
+		}
+	}
+
+	return ptr, nil
 }

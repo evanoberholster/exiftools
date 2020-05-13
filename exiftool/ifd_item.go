@@ -1,6 +1,9 @@
 package exiftool
 
-import "github.com/evanoberholster/exiftools/exiftool/exif"
+import (
+	"github.com/evanoberholster/exiftools/exiftool/exif"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
+)
 
 // NewIfdMapping creates an empty IfdMapping from the rootNode
 func NewIfdMapping() (ifdMapping *IfdMapping) {
@@ -17,7 +20,7 @@ func NewIfdMapping() (ifdMapping *IfdMapping) {
 // MappedIfd -
 type MappedIfd struct {
 	ParentTagID exif.TagID
-	Placement   exif.IfdPath
+	Placement   ifd.IfdPath
 	Path        []string
 
 	Name     string

@@ -1,4 +1,4 @@
-package mknote
+package ifdmknote
 
 // CanonContinuousDrive is part of the CanonCameraSettings field
 type CanonContinuousDrive int16

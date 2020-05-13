@@ -10,14 +10,14 @@ import (
 	"github.com/evanoberholster/exiftools/exiftool/buffer"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
-	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifdmknote"
 )
 
 const (
 	testPath = "../../../test/img/2.CR2"
 )
 
-var ti *exiftool.TagIndex
+var ti exiftool.TagIndex
 
 func init() {
 	LoadTagIndex()
@@ -27,7 +27,7 @@ func LoadTagIndex() {
 	ti = exiftool.NewTagIndex()
 	ti.Add("IFD", ifd.RootIfdTags)
 	ti.Add("IFD/Exif", ifdexif.ExifIfdTags)
-	ti.Add("IFD/Exif/Makernotes.Canon", mknote.CanonIfdTags)
+	ti.Add("IFD/Exif/Makernotes.Canon", ifdmknote.CanonIfdTags)
 	ti.Add("IFD/GPS", ifd.GPSIfdTags)
 }
 
@@ -44,7 +44,7 @@ func BenchmarkExif200(b *testing.B) {
 	if _, err = im.LoadIfds(ifd.RootIfd, ifdexif.ExifIfd, ifd.GPSIfd, ifd.IopIfd); err != nil {
 		fmt.Println(err)
 	}
-	im.LoadIfds(mknote.LoadMakernotesIfd("Canon"))
+	im.LoadIfds(ifdmknote.LoadMakernotesIfd("Canon"))
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -55,8 +55,6 @@ func BenchmarkExif200(b *testing.B) {
 		b.Fatal(err)
 	}
 
-	//res := api.NewResults()
-	//tags := make([]exif.Tag, 0, 100)
 	tags := api.NewExifResults(er)
 	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 		// GetTag
@@ -64,33 +62,18 @@ func BenchmarkExif200(b *testing.B) {
 		if err != nil {
 			return nil
 		}
-		// TagValue
-		//value, err := ite.Value()
-		//if err != nil {
-		//	return nil
-		//}
+		// SetTag
 		ite.SetTag(&t)
-		tags.AddTag(t, int8(ifdIndex), fqIfdPath, ite.TagID())
 
+		// AddTag
+		tags.AddTag(t, int8(ifdIndex), fqIfdPath, ite.TagID())
 		return nil
 	}
 
 	if err = er.Visit(ifd.RootIfd.Name, im, ti, visitor); err != nil {
 		fmt.Println(err)
-		//b.Fatal(err)
 	}
 	for i := 0; i < b.N; i++ {
-		//for _, i := range tags.GetIfd("IFD") {
-		//	//fmt.Println(inum, "__")
-		//	i[ifd.ImageWidth].GetInt(er)
-		//	i[ifd.ImageLength].GetInt(er)
-		//	i[ifd.StripByteCounts].GetInt(er)
-		//	i[ifd.StripOffsets].GetInt(er)
-		//	i[ifd.Compression].GetInt(er)
-		//	//
-		//	// StripOffsets
-		//	// Compression
-		//}
 		tags.XMLPacket()
 		tags.GPSInfo()
 		tags.Copyright()
@@ -116,6 +99,5 @@ func BenchmarkExif200(b *testing.B) {
 		tags.CanonShotInfo()
 		tags.CanonFileInfo()
 		tags.CanonAFInfo()
-		//_, _ = tags.GetTag("IFD", 0, ifd.ImageLength).GetInt(er)
 	}
 }

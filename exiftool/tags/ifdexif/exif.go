@@ -14,11 +14,11 @@ const (
 
 // ExifPath is the IFD/Exif Ifd Path
 var (
-	ExifPath = exif.IfdPath{ifd.IfdRootID}
+	ExifPath = ifd.IfdPath{ifd.IfdRootID}
 )
 
 // ExifIfd is the IFD/Exif IFD for ExifData
-var ExifIfd = exif.IfdItem{ExifPath, IfdExifID, IfdExif}
+var ExifIfd = ifd.IfdItem{ExifPath, IfdExifID, IfdExif}
 
 // ExifIfdTags is a map of the the exif.TagID to exif.Tag for "IFD/Exif"
 var ExifIfdTags = map[exif.TagID]exif.Tag{

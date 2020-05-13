@@ -12,8 +12,8 @@ const (
 
 // IopPath is the IFD/Iop Ifd Path
 var (
-	IopPath = exif.IfdPath{IfdRootID}
+	IopPath = IfdPath{IfdRootID}
 )
 
 // IopIfd is the IFD/Iop IFD for Interoperability Information
-var IopIfd = exif.IfdItem{IopPath, IfdIopID, IfdIop}
+var IopIfd = IfdItem{IopPath, IfdIopID, IfdIop}

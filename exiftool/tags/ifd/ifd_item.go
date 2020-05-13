@@ -1,9 +1,14 @@
-package exif
+package ifd
+
+import "github.com/evanoberholster/exiftools/exiftool/exif"
+
+// IfdPath is an array of TagID representing an IFD
+type IfdPath []exif.TagID
 
 // IfdItem is a container to define each IFD
 type IfdItem struct {
 	IfdPath IfdPath
-	TagID   TagID
+	TagID   exif.TagID
 	Name    string
 }
 

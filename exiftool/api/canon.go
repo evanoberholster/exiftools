@@ -3,25 +3,25 @@ package api
 import (
 	"fmt"
 
-	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifdmknote"
 )
 
 // CanonCameraSettings - Canon Makernote Camera Settings
 // Incomplete
 type CanonCameraSettings struct {
-	Macromode         bool                        // [1]
-	SelfTimer         bool                        // [2]
-	ContinuousDrive   mknote.CanonContinuousDrive // [5]
-	FocusMode         mknote.CanonFocusMode       // [7]
-	MeteringMode      mknote.CanonMeteringMode    // [17]
-	FocusRange        mknote.CanonFocusRange      // [18]
-	CanonExposureMode mknote.CanonExposureMode    // [20]
-	MaxFocalLength    int16                       // [23]
-	MinFocalLength    int16                       // [24]
+	Macromode         bool                           // [1]
+	SelfTimer         bool                           // [2]
+	ContinuousDrive   ifdmknote.CanonContinuousDrive // [5]
+	FocusMode         ifdmknote.CanonFocusMode       // [7]
+	MeteringMode      ifdmknote.CanonMeteringMode    // [17]
+	FocusRange        ifdmknote.CanonFocusRange      // [18]
+	CanonExposureMode ifdmknote.CanonExposureMode    // [20]
+	MaxFocalLength    int16                          // [23]
+	MinFocalLength    int16                          // [24]
 	//FocalUnits        int16                       // [25]
-	//FocusContinuous   mknote.CanonFocusContinous  // [32]
+	//FocusContinuous   ifdmknote.CanonFocusContinous  // [32]
 	//SpotMeteringMode  bool                        // [39]
-	AESetting mknote.CanonAESetting // [33]
+	AESetting ifdmknote.CanonAESetting // [33]
 }
 
 // CanonShotInfo - Canon Makernote Shot Information
@@ -37,19 +37,19 @@ type CanonShotInfo struct {
 
 // CanonFileInfo - Canon Makernote File Information
 type CanonFileInfo struct {
-	FocusDistance     mknote.FocusDistance    // 20 	FocusDistanceUpper 	int16u // 21 	FocusDistanceLower 	int16u
-	BracketMode       mknote.CanonBracketMode // 3 	BracketMode 	int16s
-	BracketValue      int16                   // 4 	BracketValue 	int16s
-	BracketShotNumber int16                   // 5 	BracketShotNumber 	int16s
-	LiveViewShooting  bool                    // 19 	LiveViewShooting 	int16s (bool)
+	FocusDistance     ifdmknote.FocusDistance    // 20 	FocusDistanceUpper 	int16u // 21 	FocusDistanceLower 	int16u
+	BracketMode       ifdmknote.CanonBracketMode // 3 	BracketMode 	int16s
+	BracketValue      int16                      // 4 	BracketValue 	int16s
+	BracketShotNumber int16                      // 5 	BracketShotNumber 	int16s
+	LiveViewShooting  bool                       // 19 	LiveViewShooting 	int16s (bool)
 }
 
 // CanonAFInfo - Canon Makernote Autofocus Information
 type CanonAFInfo struct {
-	AFAreaMode    mknote.CanonAFAreaMode
+	AFAreaMode    ifdmknote.CanonAFAreaMode
 	NumAFPoints   uint16
 	ValidAFPoints uint16
-	AFPoints      []mknote.AFPoint
+	AFPoints      []ifdmknote.AFPoint
 	InFocus       []int
 	Selected      []int
 }
@@ -57,26 +57,26 @@ type CanonAFInfo struct {
 // CanonCameraSettings convenience func. "IFD/Exif/Makernotes.Canon" CanonCameraSettings
 // Canon Camera Settings from the Makernote
 func (res ExifResults) CanonCameraSettings() (CanonCameraSettings, error) {
-	ii, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonCameraSettings).GetUint16(res.exifReader)
+	ii, err := res.GetTag(ifdmknote.FqIfdCanonMakernote, 0, ifdmknote.CanonCameraSettings).GetUint16(res.exifReader)
 	if len(ii) < 24 || err != nil {
 		return CanonCameraSettings{}, err
 	}
 	return CanonCameraSettings{
 		Macromode:         intToBool(ii[1]),
 		SelfTimer:         intToBool(ii[2]),
-		ContinuousDrive:   mknote.CanonContinuousDrive(ii[5]),
-		FocusMode:         mknote.CanonFocusMode(ii[7]),
-		MeteringMode:      mknote.CanonMeteringMode(ii[17]),
-		FocusRange:        mknote.CanonFocusRange(ii[18]),
-		CanonExposureMode: mknote.CanonExposureMode(ii[20]),
-		AESetting:         mknote.CanonAESetting(ii[33]),
+		ContinuousDrive:   ifdmknote.CanonContinuousDrive(ii[5]),
+		FocusMode:         ifdmknote.CanonFocusMode(ii[7]),
+		MeteringMode:      ifdmknote.CanonMeteringMode(ii[17]),
+		FocusRange:        ifdmknote.CanonFocusRange(ii[18]),
+		CanonExposureMode: ifdmknote.CanonExposureMode(ii[20]),
+		AESetting:         ifdmknote.CanonAESetting(ii[33]),
 	}, nil
 }
 
 // CanonShotInfo convenience func. "IFD/Exif/Makernotes.Canon" CanonShotInfo
 // Canon Camera Shot Info from the Makernote
 func (res ExifResults) CanonShotInfo() (CanonShotInfo, error) {
-	si, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonShotInfo).GetUint16(res.exifReader)
+	si, err := res.GetTag(ifdmknote.FqIfdCanonMakernote, 0, ifdmknote.CanonShotInfo).GetUint16(res.exifReader)
 	if len(si) < 24 || err != nil {
 		return CanonShotInfo{}, err
 	}
@@ -87,7 +87,7 @@ func (res ExifResults) CanonShotInfo() (CanonShotInfo, error) {
 		FlashExposureComp:      int16(si[15]),
 		AutoExposureBracketing: int16(si[16]),
 		AEBBracketValue:        canonEv(int16(si[17])),
-		//FocusDistance:          mknote.NewFocusDistance(si[19], si[20]),
+		//FocusDistance:          ifdmknote.NewFocusDistance(si[19], si[20]),
 	}, nil
 }
 
@@ -95,13 +95,13 @@ func (res ExifResults) CanonShotInfo() (CanonShotInfo, error) {
 // Canon Camera File Info from the Makernote
 func (res ExifResults) CanonFileInfo() (CanonFileInfo, error) {
 
-	fi, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonFileInfo).GetUint16(res.exifReader)
+	fi, err := res.GetTag(ifdmknote.FqIfdCanonMakernote, 0, ifdmknote.CanonFileInfo).GetUint16(res.exifReader)
 	if len(fi) < 21 || err != nil {
 		return CanonFileInfo{}, err
 	}
 	return CanonFileInfo{
-		FocusDistance:     mknote.NewFocusDistance(fi[20], fi[21]),
-		BracketMode:       mknote.CanonBracketMode(fi[3]),
+		FocusDistance:     ifdmknote.NewFocusDistance(fi[20], fi[21]),
+		BracketMode:       ifdmknote.CanonBracketMode(fi[3]),
 		BracketValue:      canonEv(int16(fi[4])),
 		BracketShotNumber: int16(fi[5]),
 		LiveViewShooting:  intToBool(fi[19]),
@@ -116,13 +116,13 @@ func (res ExifResults) CanonAFInfo() (afInfo CanonAFInfo, err error) {
 			err = state.(error)
 		}
 	}()
-	af, err := res.GetTag(mknote.FqIfdCanonMakernote, 0, mknote.CanonAFInfo2).GetUint16(res.exifReader)
+	af, err := res.GetTag(ifdmknote.FqIfdCanonMakernote, 0, ifdmknote.CanonAFInfo2).GetUint16(res.exifReader)
 	if len(af) < 8 || err != nil {
 		panic(ErrParseTag)
 	}
 
 	afInfo = CanonAFInfo{
-		AFAreaMode:    mknote.CanonAFAreaMode(af[1]),
+		AFAreaMode:    ifdmknote.CanonAFAreaMode(af[1]),
 		NumAFPoints:   af[2],
 		ValidAFPoints: af[3],
 	}
@@ -136,7 +136,7 @@ func (res ExifResults) CanonAFInfo() (afInfo CanonAFInfo, err error) {
 
 	validPoints := int(af[3])
 	// AFPoints
-	afInfo.AFPoints = make([]mknote.AFPoint, validPoints)
+	afInfo.AFPoints = make([]ifdmknote.AFPoint, validPoints)
 	xAdjust := int16(af[4] / 2) // Adjust x-axis
 	yAdjust := int16(af[5] / 2) // Adjust y-axis
 
@@ -146,7 +146,7 @@ func (res ExifResults) CanonAFInfo() (afInfo CanonAFInfo, err error) {
 		h := int16(af[offset+validPoints])
 		x := int16(af[offset+(2*validPoints)]) + xAdjust - (w / 2)
 		y := int16(af[offset+(3*validPoints)]) + yAdjust - (h / 2)
-		afInfo.AFPoints[i] = mknote.NewAFPoint(w, h, x, y)
+		afInfo.AFPoints[i] = ifdmknote.NewAFPoint(w, h, x, y)
 	}
 
 	return afInfo, nil

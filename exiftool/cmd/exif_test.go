@@ -15,7 +15,7 @@ import (
 	"github.com/evanoberholster/exiftools/exiftool/buffer"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
-	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifdmknote"
 	mknoteold "github.com/evanoberholster/exiftools/mknote"
 )
 
@@ -32,19 +32,19 @@ func BenchmarkExifDecode200(b *testing.B) {
 	if _, err = im.LoadIfds(ifd.RootIfd, ifdexif.ExifIfd, ifd.GPSIfd, ifd.IopIfd); err != nil {
 		fmt.Println(err)
 	}
-	im.LoadIfds(mknote.LoadMakernotesIfd("Canon"))
+	im.LoadIfds(ifdmknote.LoadMakernotesIfd("Canon"))
 
 	b.ReportAllocs()
 	b.ResetTimer()
 	var er *exiftool.ExifReader
 	for i := 0; i < b.N; i++ {
 		f.Seek(0, 0)
-		cb := buffer.NewCacheBuffer(f, 64*1024)
+		cb := buffer.NewCacheBuffer(f, 128*1024)
 		er, err = exiftool.ParseExif2(cb)
 		if err != nil {
 			b.Fatal(err)
 		}
-		//res := api.NewResults()
+
 		tags := api.NewExifResults(er)
 		visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 			// GetTag
@@ -52,23 +52,15 @@ func BenchmarkExifDecode200(b *testing.B) {
 			if err != nil {
 				return nil
 			}
+			// SetTag
 			ite.SetTag(&t)
+
+			// AddTag
 			tags.AddTag(t, int8(ifdIndex), fqIfdPath, ite.TagID())
-			// TagValue
-			//value, err := ite.Value()
-			//if err != nil {
-			//	return nil
-			//}
-			//if ifdIndex > 0 {
-			//	fqIfdPath = fqIfdPath + strconv.Itoa(ifdIndex)
-			//}
-			//res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
 
 			return nil
 		}
 
-		//f.Seek(0, 0)
-		//p, err = ioutil.ReadAll(f)
 		if err = er.Visit(ifd.RootIfd.Name, im, ti, visitor); err != nil {
 			b.Fatal(err)
 		}

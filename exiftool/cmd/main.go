@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 
 	"github.com/evanoberholster/exiftools/exiftool"
 	"github.com/evanoberholster/exiftools/exiftool/api"
 	"github.com/evanoberholster/exiftools/exiftool/buffer"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifd"
 	"github.com/evanoberholster/exiftools/exiftool/tags/ifdexif"
-	"github.com/evanoberholster/exiftools/exiftool/tags/mknote"
+	"github.com/evanoberholster/exiftools/exiftool/tags/ifdmknote"
 )
 
 func main() {
@@ -22,28 +21,19 @@ func main() {
 		panic(err)
 	}
 
-	cb := buffer.NewCacheBuffer(f, 128*1024)
-
-	start := time.Now()
-	er, err := exiftool.ParseExif2(cb)
-	fmt.Println("Exif time: ", time.Since(start), er)
-	if err != nil {
-		panic(err)
-		fmt.Println(err)
-	}
-
-	//   ifd.IopIfd
-	//if _, err = im.LoadIfds(mknote.CanonMakernoteIfd); err != nil {
-	//	fmt.Println(err)
-	//}
 	ti := exiftool.NewTagIndex()
 	ti.Add("IFD", ifd.RootIfdTags)
 	ti.Add("IFD/Exif", ifdexif.ExifIfdTags)
-	ti.Add("IFD/Exif/Makernotes.Canon", mknote.CanonIfdTags)
+	ti.Add("IFD/Exif/Makernotes.Canon", ifdmknote.CanonIfdTags)
 	ti.Add("IFD/GPS", ifd.GPSIfdTags)
-	//
-	//res := api.NewResults()
-	start = time.Now()
+
+	cb := buffer.NewCacheBuffer(f, 128*1024)
+
+	er, err := exiftool.ParseExif2(cb)
+	if err != nil {
+		panic(err)
+	}
+
 	im := exiftool.NewIfdMapping()
 
 	if _, err = im.LoadIfds(ifd.RootIfd, ifdexif.ExifIfd, ifd.GPSIfd); err != nil {
@@ -52,57 +42,28 @@ func main() {
 	//if _, err = im.LoadIfds(mknote.CanonMakernoteIfd); err != nil {
 	//	fmt.Println(err)
 	//}
-	//tags := make([]exif.Tag, 0, 2)
+
 	tags := api.NewExifResults(er)
 	visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
 		// GetTag
-		//fmt.Println(fqIfdPath, ite.TagID())
 		t, err := ti.Get(fqIfdPath, ite.TagID())
 		if err != nil {
-			//fmt.Printf("Path: %s \t| TagID: 0x%04x  \t| %s %d %s\n", fqIfdPath, ite.TagID(), ite.TagType(), ifdIndex, err.Error())
 			return nil
 		}
 
-		// TagValue
-		//value, err := ite.Value()
-		//if err != nil {
-		//	//	fmt.Printf("%s \t| Value Error: %s \n", t.Name, err.Error())
-		//	return nil
-		//}
+		// SetTag
 		ite.SetTag(&t)
-		tags.AddTag(t, int8(ifdIndex), fqIfdPath, ite.TagID())
-		//if ite.TagID() == ifd.Make {
-		//
-		//	tags = append(tags, t)
-		//}
 
-		//if ifdIndex > 0 {
-		//	fqIfdPath = fqIfdPath + strconv.Itoa(ifdIndex)
-		//}
-		//res.Add(fqIfdPath, ite.TagID(), t.Name, ite.TagType(), value)
+		// AddTag
+		tags.AddTag(t, int8(ifdIndex), fqIfdPath, ite.TagID())
 
 		fmt.Printf("Path: %s \t| TagID: 0x%04x | %s   \t| %s \n", fqIfdPath, ite.TagID(), t.Name, ite.TagType())
-		//if ite.TagID() == ifd.XMLPacket {
-		//	//str := strings.Replace(string(value.([]byte)), "\n", "", -1)
-		//	//str = strings.Replace(str, "   ", "", -1)
-		//	//fmt.Println(str)
-		//} else {
-		//	//fmt.Println(value)
-		//}
-
 		return nil
 	}
-
-	//f.Seek(0, 0)
-	//p, err := ioutil.ReadAll(f)
 
 	if err = er.Visit(ifd.RootIfd.Name, im, ti, visitor); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Decode Time: ", time.Since(start))
-	start = time.Now()
-
-	//fmt.Println(tags["IFD"][ifd.Make])
 
 	// Thumbnails
 	for inum, i := range tags.GetIfd("IFD") {
@@ -147,7 +108,6 @@ func main() {
 	//fmt.Println(tags.CanonShotInfo())
 	//fmt.Println(tags.CanonFileInfo())
 	//fmt.Println(tags.CanonAFInfo())
-	fmt.Println("Get Time: ", time.Since(start))
 
 	offset, size, err := tags.Thumbnail()
 	if err != nil {
@@ -159,34 +119,4 @@ func main() {
 	} else {
 		ioutil.WriteFile("image.jpg", thumb, 0644)
 	}
-
-	//fmt.Println("Total Time: ", time.Since(begin))
-	//visitor := func(fqIfdPath string, ifdIndex int, ite *exiftool.IfdTagEntry) (err error) {
-	//	tagID := ite.TagID()
-	//	//agType := ite.TagType()
-	//
-	//	//fmt.Println(fqIfdPath, tagID)
-	//	// TagName = IfdPointer, TagID
-	//	t, _ := tags.RootIfdTagNames[tagID]
-	//
-	//	value, err := ite.Value()
-	//
-	//	//if err != nil {
-	//	//	fmt.Println(err)
-	//	//}
-	//	if t == "Make" && value == "Canon" {
-	//		canon.LoadCanonMakerNote(im)
-	//		fmt.Println("Hello World")
-	//	}
-	//
-	//	//fmt.Printf("Path: %s \t| TagID: 0x%04x  \t|  %s \t| Type:%s %s\n", tagType, tagID, t, fqIfdPath, value)
-	//	//fmt.Println(, )
-	//	return nil
-	//}
-	//
-	//err = eh.Visit(exif.IfdRootPath, tags.IfdPathStandard, im, ti, p, visitor)
-	//if err != nil {
-	//	fmt.Println(err)
-	//}
-
 }

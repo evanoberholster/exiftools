@@ -20,11 +20,6 @@ func (mm MeteringMode) String() string {
 	return meteringModeValues[mm]
 }
 
-// MarshalJSON - Custom Marshall JSON
-//func (mm *MeteringMode) MarshalJSON() ([]byte, error) {
-//	return []byte("\"" + mm.String() + "\""), nil
-//}
-
 // MeteringModeValues -
 // Derived from https://sno.phy.queensu.ca/~phil/exiftool/TagNames/EXIF.html (23/09/2019)
 var meteringModeValues = map[MeteringMode]string{
@@ -45,11 +40,6 @@ type ExposureMode uint8
 func (em ExposureMode) String() string {
 	return exposureModeValues[em]
 }
-
-// MarshalJSON - Custom Marshall JSON
-//func (em ExposureMode) MarshalJSON() ([]byte, error) {
-//	return []byte("\"" + em.String() + "\""), nil
-//}
 
 // ExposureModeValues -
 // Derived from https://sno.phy.queensu.ca/~phil/exiftool/TagNames/EXIF.html (23/09/2019)

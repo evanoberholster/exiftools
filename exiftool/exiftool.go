@@ -29,7 +29,7 @@ var (
 type TagVisitorFn func(fqIfdPath string, ifdIndex int, ite *IfdTagEntry) (err error)
 
 // Visit recursively invokes a callback for every tag.
-func (er ExifReader) Visit(rootIfdName string, ifdMapping *IfdMapping, tagIndex *TagIndex, visitor TagVisitorFn) (err error) {
+func (er ExifReader) Visit(rootIfdName string, ifdMapping *IfdMapping, tagIndex TagIndex, visitor TagVisitorFn) (err error) {
 	defer func() {
 		if state := recover(); state != nil {
 			err = state.(error)
